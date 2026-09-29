@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Cấp nước</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2430;--mute:#667085;--line:#dde2ea;--pri:#0b4f9c;--pri2:#e8f0fb;--ok:#1b7f4b;--warn:#b54708}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+header h1{font-size:20px;margin:0 0 2px}
+header p{margin:0;color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:16px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text]{width:100%;padding:10px 12px;font-size:16px;border:1px solid var(--line);border-radius:8px}
+input[type=text]:focus{outline:2px solid var(--pri);border-color:var(--pri)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:9px 16px}
+button.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+.err{color:#b42318;font-size:14px;min-height:20px;margin-top:6px}
+.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mute)}
+.top b{color:var(--ink)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pri);width:0}
+.qn{font-size:13px;color:var(--pri);font-weight:700;letter-spacing:.3px}
+.qt{font-size:18px;font-weight:600;margin:4px 0 14px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.opt:hover{border-color:var(--pri)}
+.opt.sel{border-color:var(--pri);background:var(--pri2)}
+.opt .k{flex:0 0 26px;height:26px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:#fff}
+.opt.sel .k{background:var(--pri);border-color:var(--pri);color:#fff}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.grid button{padding:6px 0;font-size:13px}
+.grid button.done{background:var(--pri2);border-color:#9dbbe6}
+.grid button.cur{outline:2px solid var(--pri)}
+.sub{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.res table{width:100%;border-collapse:collapse;font-size:17px}
+.res td{padding:12px 6px;border-bottom:1px solid var(--line)}
+.res td:first-child{color:var(--mute);width:40%}
+.res td:last-child{font-weight:700}
+.hash{font-family:Consolas,"Courier New",monospace;font-size:24px;letter-spacing:3px;color:var(--pri)}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(15,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-width:420px;width:100%}
+@media print{body{background:#fff}.noprint{display:none!important}.card{border:1px solid #999}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Trắc nghiệm Cấp thoát nước trong công trình</h1>
+  <p>Chương 02 Bài 2 · Khoa Cơ khí, Ô tô và Xây dựng · Trường Đại học Điện lực</p>
+</header>
+
+<section id="s1" class="card">
+  <p style="margin-top:0">Bài gồm <b id="nq"></b> câu, mỗi câu có một đáp án đúng<span id="tl"></span>. Câu hỏi và phương án được xáo trộn riêng cho từng lượt làm. Điểm tính theo thang 10.</p>
+  <label for="mssv">Mã số sinh viên</label>
+  <input id="mssv" type="text" autocomplete="off" placeholder="Ví dụ 2081110123">
+  <label for="ten">Họ và tên</label>
+  <input id="ten" type="text" autocomplete="off" placeholder="Ví dụ Nguyễn Văn An">
+  <div class="err" id="e1"></div>
+  <button class="pri" id="start">Bắt đầu làm bài</button>
+</section>
+
+<section id="s2" class="hidden">
+  <div class="card">
+    <div class="top"><span><b id="who"></b></span><span>Đã trả lời <b id="cnt">0</b>/<b id="tot"></b> · <span id="clkL">Thời gian</span> <b id="clk">00:00</b></span></div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+  <div class="card">
+    <div class="qn" id="qn"></div>
+    <div class="qt" id="qt"></div>
+    <div id="opts"></div>
+    <div class="nav"><button id="prev">← Câu trước</button><button id="next">Câu sau →</button></div>
+  </div>
+  <div class="card">
+    <div class="grid" id="grid"></div>
+    <div class="sub"><span class="note" style="margin:0">Bấm số để chuyển nhanh đến câu tương ứng. Ô tô xanh là câu đã trả lời.</span><button class="pri" id="submit">Nộp bài</button></div>
+  </div>
+</section>
+
+<section id="s3" class="card res hidden">
+  <h2 style="margin-top:0;font-size:20px">Kết quả trắc nghiệm</h2>
+  <table>
+    <tr><td>MSSV</td><td id="rM"></td></tr>
+    <tr><td>Họ và tên</td><td id="rT"></td></tr>
+    <tr><td>Điểm</td><td id="rD"></td></tr>
+    <tr><td>Số câu đúng</td><td id="rC"></td></tr>
+    <tr><td>Mã băm</td><td class="hash" id="rH"></td></tr>
+  </table>
+  <p class="note">Nộp thời điểm <span id="rTime"></span>. Chụp màn hình hoặc in trang này để nộp cho giảng viên. Mã băm gắn với MSSV, họ tên và điểm, sửa bất kỳ thông tin nào thì mã sẽ không còn khớp.</p>
+  <div class="noprint"><button id="print">In kết quả</button></div>
+</section>
+</div>
+
+<div class="modal hidden" id="mdl"><div class="card">
+  <p id="mTxt" style="margin-top:0"></p>
+  <div class="nav"><button id="mNo">Làm tiếp</button><button class="pri" id="mYes">Nộp bài</button></div>
+</div></div>
+
+<script>
+const QS = [["Đường ống dẫn nước vào nhà nối từ đâu đến đâu?", "Từ ống cấp nước bên ngoài đến nút đồng hồ", "Từ nút đồng hồ đến két nước trên mái", "Từ bể chứa nước đến chân ống đứng cấp nước", "Từ ống đứng đến các thiết bị vệ sinh"], ["Theo bài, ống dẫn nước vào nhà thường đặt với độ dốc bao nhiêu và hướng về đâu?", "0,003 hướng về phía ống bên ngoài", "0,003 hướng về phía nút đồng hồ", "0,03 hướng về phía ống bên ngoài", "0,03 hướng về phía nút đồng hồ"], ["Theo TCVN 4513:1988, khoảng độ dốc cho phép của ống cấp nước trong nhà là bao nhiêu?", "0,002 đến 0,005", "0,02 đến 0,05", "0,0002 đến 0,0005", "0,005 đến 0,010"], ["Khi chưa tính được lưu lượng, đường kính ống dẫn nước vào nhà ít tầng chọn sơ bộ bao nhiêu?", "25 đến 32 mm", "50 mm", "75 đến 100 mm", "200 đến 300 mm"], ["Khi chưa tính được lưu lượng, đường kính ống dẫn nước vào nhà có khối tích trung bình chọn sơ bộ bao nhiêu?", "50 mm", "25 mm", "100 mm", "15 mm"], ["Ống dẫn nước vào nhà thường chôn sâu bao nhiêu?", "0,7 đến 1,0 m", "0,2 đến 0,4 m", "1,5 đến 2,0 m", "2,5 đến 3,0 m"], ["Khi lắp đai khởi thủy, đường kính lỗ khoan trên ống chính không vượt quá bao nhiêu?", "Một phần ba đường kính ống chính", "Một nửa đường kính ống chính", "Hai phần ba đường kính ống chính", "Bằng đường kính ống chính"], ["Ống lồng hoặc lỗ chừa khi ống đi qua tường, móng phải lớn hơn đường kính ống ít nhất bao nhiêu?", "100 mm", "10 mm", "30 mm", "300 mm"], ["Theo TCVN 4513:1988, khoảng cách ngang tối thiểu giữa ống dẫn nước vào nhà và ống thoát nước ra khỏi nhà là bao nhiêu?", "1,5 m", "0,5 m", "0,15 m", "5,0 m"], ["Cách nối ống dẫn nước vào nhà với ống ngoài được dùng rộng rãi nhất hiện nay là gì?", "Dùng đai khởi thủy", "Cưa ống và lắp thêm tê", "Dùng tê lắp sẵn từ trước", "Hàn trực tiếp ống nhánh"], ["Tại chỗ ống dẫn nước vào nhà nối với ống cấp nước bên ngoài phải bố trí gì?", "Giếng thăm có van đóng mở", "Hố ga thu nước mưa mặt đường", "Bể tự hoại loại nhỏ", "Trạm bơm tăng áp cục bộ"], ["Đồng hồ đo nước loại cánh quạt thường có đường kính trong khoảng nào?", "15 đến 40 mm", "50 đến 250 mm", "5 đến 10 mm", "40 đến 100 mm"], ["Đồng hồ đo nước loại tuốc bin thường dùng cho đường kính nào?", "Từ 50 mm trở lên", "Từ 15 mm trở xuống", "Từ 15 đến 40 mm", "Chỉ từ 300 mm trở lên"], ["Công thức cơ bản của đồng hồ đo nước lưu tốc là gì?", "Q = ω.V", "Q = V / ω", "Q = ω.V²", "Q = S.q²"], ["Lưu lượng đặc trưng của đồng hồ là lưu lượng qua đồng hồ khi tổn thất áp lực bằng bao nhiêu?", "10 m", "1 m", "2,5 m", "5 m"], ["Điều kiện chọn đồng hồ theo lưu lượng ngày đêm trong bài là gì?", "Qngđ ≤ 2Qđtr", "Qngđ ≥ 2Qđtr", "Qngđ ≤ Qđtr / 2", "Qngđ ≤ 24Qđtr"], ["Công thức tính tổn thất áp lực qua đồng hồ đo nước là gì?", "h = S.q²", "h = S.q", "h = S / q²", "h = S².q"], ["Theo TCVN 4513:1988, tổn thất qua đồng hồ cánh quạt khi dùng nước sinh hoạt không vượt quá bao nhiêu?", "2,5 m", "1,0 m", "5,0 m", "10 m"], ["Theo TCVN 4513:1988, tổn thất qua đồng hồ tuốc bin khi có cháy không vượt quá bao nhiêu?", "2,5 m", "1,0 m", "5,0 m", "10 m"], ["Giới hạn trên Qmax của đồng hồ bằng khoảng bao nhiêu phần trăm lưu lượng đặc trưng?", "45 đến 50 %", "6 đến 8 %", "80 đến 90 %", "10 đến 15 %"], ["Đồng hồ đo nước loại cánh quạt phải lắp theo tư thế nào?", "Nằm ngang", "Thẳng đứng", "Nghiêng 45 độ", "Tư thế nào cũng được"], ["Khi kiểm tra độ chính xác đồng hồ, lượng nước thử tối thiểu theo bài là bao nhiêu?", "20 lít", "2 lít", "200 lít", "1000 lít"], ["Theo bài, sai số cho phép của đồng hồ cũ là bao nhiêu?", "±5 %", "±2 %", "±3 %", "±10 %"], ["Theo TCVN 8779‑1:2011, lưu lượng quá tải Q4 bằng bao nhiêu lần Q3?", "1,25 lần", "1,6 lần", "2,0 lần", "0,8 lần"], ["Theo TCVN 8779‑1:2011, lưu lượng chuyển tiếp Q2 bằng bao nhiêu lần Q1?", "1,6 lần", "1,25 lần", "2,5 lần", "10 lần"], ["Tỷ số R của đồng hồ đo nước được định nghĩa thế nào?", "R = Q3 / Q1", "R = Q4 / Q3", "R = Q2 / Q1", "R = Q1 / Q3"], ["Quy trình kiểm định đồng hồ đo nước nêu trong bài có ký hiệu nào?", "ĐLVN 17:2017", "TCVN 4519:1988", "QCVN 07:2023/BXD", "TCVN 13606:2023"], ["Theo bài, đồng hồ nước cơ khí được kiểm định định kỳ bao lâu một lần?", "5 năm", "1 năm", "3 năm", "10 năm"], ["Ống thép tráng kẽm dùng trong nhà thường có chiều dài mỗi cây bao nhiêu?", "4 đến 8 m", "1 đến 2 m", "12 đến 18 m", "20 đến 30 m"], ["Ống nhựa chịu nhiệt PPR được nối bằng phương pháp nào?", "Hàn nhiệt", "Keo dán", "Tiện ren", "Mặt bích"], ["Ống CPVC được nối bằng phương pháp nào?", "Keo dán chuyên dụng", "Hàn nhiệt đối đầu", "Ren và sợi đay", "Gioăng cao su và đai"], ["Ống HDPE có màu đen do được pha thêm chất gì?", "Muội than", "Than hoạt tính", "Oxit sắt", "Bột đồng"], ["Ống CPVC dẫn được nước nóng tới khoảng bao nhiêu độ?", "95 °C", "30 °C", "50 °C", "150 °C"], ["Theo bài, thiết bị đóng mở nước là van (không phải khóa) khi đường kính ống như thế nào?", "Nhỏ hơn 50 mm", "Lớn hơn 50 mm", "Lớn hơn 100 mm", "Nhỏ hơn 10 mm"], ["Van nào tự động đóng nước khi bể chứa hoặc két nước đầy?", "Van phao", "Van một chiều", "Van giảm áp", "Van phòng ngừa"], ["Theo TCVN 4513:1988, áp lực làm việc lớn nhất trong mạng cấp nước bên trong không quá bao nhiêu?", "60 m", "40 m", "100 m", "10 m"], ["Ký hiệu PN10 trên ống nhựa có nghĩa là gì?", "Áp lực danh nghĩa 10 bar ở 20 °C", "Đường kính ngoài danh nghĩa 10 mm", "Chiều dày thành ống bằng 10 mm", "Áp lực thử 10 bar ở 95 °C"], ["Tỷ số SDR của ống nhựa được tính thế nào?", "SDR = dn / e", "SDR = e / dn", "SDR = di / e", "SDR = dn × e"], ["Chất lượng nước sạch dùng cho sinh hoạt được quy định trong văn bản nào?", "QCVN 01‑1:2018/BYT", "QCVN 06:2022/BXD", "TCVN 4519:1988", "QCVN 07:2023/BXD"], ["Tiêu chuẩn thiết kế cấp nước bên trong nhà được dùng làm căn cứ chính trong bài là văn bản nào?", "TCVN 4513:1988", "TCVN 4519:1988", "TCVN 13606:2023", "TCVN 8779‑1:2011"], ["Vì sao ống dẫn nước vào nhà đặt dốc về phía ống bên ngoài?", "Để xả cạn nước trong nhà khi sửa chữa", "Để nước chảy vào nhà nhanh hơn", "Để tăng áp lực tại nút đồng hồ", "Để giảm độ sâu chôn ống trong đất"], ["Vì sao ống dẫn nước vào nhà cần có chiều dài nhỏ nhất?", "Giảm vật tư, đào đắp và tổn thất áp lực", "Tăng thời gian nước lưu trong ống", "Giúp đồng hồ đo chính xác hơn", "Tăng áp lực nước ở cuối mạng lưới"], ["Công trình công cộng quan trọng cần cấp nước liên tục nên chọn sơ đồ dẫn nước vào nào?", "Hai đường dẫn từ hai tuyến ống ngoài", "Một đường dẫn vào từ một phía nhà", "Một đường dẫn có hai đồng hồ nối tiếp", "Một đường dẫn có ống lồng qua móng"], ["Ưu điểm chính của đai khởi thủy so với cách cưa ống lắp thêm tê là gì?", "Không phải cắt nước khi đấu nối", "Khoan được lỗ bằng đường kính ống", "Không cần gioăng làm kín mối nối", "Không cần van trên ống nhánh"], ["Vì sao ống đi qua tường, móng nhà phải đặt trong lỗ chừa hoặc ống lồng?", "Để nhà lún không kéo gãy ống", "Để tăng áp lực nước vào nhà", "Để giảm vận tốc nước trong ống", "Để đồng hồ đo chính xác hơn"], ["Vì sao chỗ giao nhau ống cấp nước phải đặt cao hơn ống thoát nước?", "Tránh nước bẩn thấm vào ống cấp", "Để ống thoát có độ dốc lớn hơn", "Để giảm độ sâu đào đất ống cấp", "Để giảm tổn thất áp lực ống cấp"], ["Vì sao đường kính ống dẫn vào nhà chọn sơ bộ vẫn phải kiểm tra vận tốc?", "Vận tốc lớn gây ồn, tổn thất và búa nước", "Vận tốc nhỏ làm đồng hồ quay quá nhanh", "Vận tốc không ảnh hưởng đến tổn thất", "Chỉ để kiểm tra lại độ dốc của ống"], ["Khi nào nên dùng đồng hồ đo nước loại kết hợp?", "Khi lưu lượng dao động rất lớn", "Khi lưu lượng luôn ổn định", "Khi đường ống nhỏ hơn 15 mm", "Khi nước có nhiệt độ rất cao"], ["Nếu lưu lượng qua đồng hồ nhỏ hơn Qmin thì điều gì xảy ra?", "Đồng hồ không quay hoặc đo thiếu", "Đồng hồ quay nhanh và đo thừa", "Tổn thất qua đồng hồ tăng vọt", "Đồng hồ bị hỏng cơ khí ngay"], ["Nếu lưu lượng thường xuyên vượt Qmax của đồng hồ thì hậu quả là gì?", "Đồng hồ nhanh hỏng, tổn thất lớn", "Đồng hồ ngừng quay hoàn toàn", "Đồng hồ đo chính xác hơn", "Áp lực sau đồng hồ tăng lên"], ["Vì sao sau khi chọn cỡ đồng hồ theo lưu lượng vẫn phải kiểm tra tổn thất áp lực?", "Tổn thất lớn làm thiếu áp cho thiết bị", "Để xác định lưu lượng ngày đêm", "Để tính lại số người dùng nước", "Để chọn vật liệu ống dẫn vào nhà"], ["Vì sao giới hạn tổn thất qua đồng hồ khi có cháy lớn hơn khi dùng nước bình thường?", "Cháy xảy ra ngắn nên chấp nhận tổn thất lớn hơn", "Khi có cháy lưu lượng qua đồng hồ nhỏ đi", "Khi có cháy đồng hồ được tháo khỏi ống", "Khi có cháy áp lực mạng ngoài tăng gấp đôi"], ["Vì sao không nên chọn đồng hồ quá lớn so với nhu cầu dùng nước?", "Qmin lớn nên kém nhạy khi dùng ít nước", "Tổn thất qua đồng hồ lớn quá mức", "Đồng hồ lớn không đo được nước lạnh", "Đồng hồ lớn không lắp được van xả"], ["Vì sao đồng hồ cánh quạt phải lắp nằm ngang?", "Trục cánh quạt đứng, lắp nghiêng tăng sai số", "Để có thể xả cạn nước qua đồng hồ", "Để giảm lưu lượng khởi động đồng hồ", "Để lắp được đường ống vòng phía trên"], ["Đường ống vòng quanh nút đồng hồ có tác dụng gì?", "Cấp nước khi tháo đồng hồ sửa chữa", "Tăng độ chính xác của đồng hồ", "Đo riêng lượng nước chữa cháy", "Xả nước bẩn khi khử trùng ống"], ["Van xả đặt ngay sau đồng hồ dùng để làm gì?", "Xả nước và kiểm tra độ chính xác", "Giảm áp lực cho các tầng thấp", "Ngăn nước chảy ngược ra ống ngoài", "Đóng nước khi két mái đã đầy"], ["Khi kiểm tra độ chính xác đồng hồ tại chỗ, thao tác van nào đúng?", "Đóng van sau, mở van xả, mở van trước", "Mở van sau, đóng van xả, mở van trước", "Đóng van trước, mở van xả, mở van sau", "Mở tất cả các van kể cả van vòng"], ["Sai số dương khi kiểm tra đồng hồ có ý nghĩa gì?", "Đồng hồ chạy nhanh, người dùng trả thừa", "Đồng hồ chạy chậm, công ty bị thất thu", "Đồng hồ đo đúng tuyệt đối", "Đồng hồ bị lắp ngược chiều dòng chảy"], ["Đồng hồ vẫn quay khi mọi vòi trong nhà đã khóa cho biết điều gì?", "Có rò rỉ phía sau đồng hồ", "Đồng hồ đã hết hạn kiểm định", "Áp lực ống ngoài quá thấp", "Van trước đồng hồ đang đóng"], ["Đồng hồ có tỷ số R lớn hơn thì có đặc điểm gì?", "Đo được lưu lượng nhỏ hơn", "Chịu được áp lực cao hơn", "Có tổn thất áp lực lớn hơn", "Chỉ đo được nước nóng"], ["Ưu điểm chính của đồng hồ siêu âm so với đồng hồ cánh quạt là gì?", "Không có bộ phận quay, tổn thất gần bằng không", "Giá thành thấp nhất trong các loại đồng hồ", "Không cần pin hay bất kỳ nguồn điện nào", "Đo chính xác kể cả khi ống có nhiều bọt khí"], ["Đồng hồ điện từ đòi hỏi điều kiện gì về nước?", "Nước có độ dẫn điện tối thiểu", "Nước hoàn toàn không dẫn điện", "Nước có nhiệt độ trên 60 °C", "Nước có vận tốc trên 5 m/s"], ["Vì sao lớp kẽm của ống thép quan trọng với nước sinh hoạt?", "Chống gỉ và giữ nước không bẩn vì gỉ", "Làm ống nhẹ hơn khi lắp đặt", "Giúp ống giãn nở nhiệt nhiều hơn", "Giúp nối ống bằng keo dễ dàng"], ["Vì sao phải quét sơn chống gỉ lên ren ống thép trước khi vặn vào phụ tùng?", "Tiện ren làm mất lớp kẽm bảo vệ", "Để ren trơn và dễ vặn hơn", "Để tăng áp lực làm việc của ống", "Để ống không giãn nở theo nhiệt"], ["Rắc co (bộ ba) được dùng trong trường hợp nào?", "Khi không xoay được ống hoặc cần tháo sửa", "Khi nối hai đoạn ống khác đường kính", "Khi nối ống nhánh vuông góc ống chính", "Khi bịt kín đầu ống để thử áp lực"], ["Hệ số giãn nở nhiệt lớn của ống PPR được đánh giá thế nào?", "Là nhược điểm, phải bố trí bù giãn nở", "Là ưu điểm, giúp ống tự làm kín mối nối", "Là ưu điểm, giúp ống chịu được nhiệt cao", "Không ảnh hưởng gì đến việc lắp đặt"], ["Vì sao ống HDPE phù hợp làm ống dẫn nước vào nhà chôn trong đất?", "Dẻo, chống ăn mòn, mối hàn kín", "Chịu được nước nóng tới 95 °C", "Nối bằng keo nhanh và rẻ", "Giãn nở nhiệt nhỏ nhất các loại"], ["Nhận định ống PE được nối bằng keo dán là đúng hay sai?", "Sai, PE nối bằng hàn nhiệt hoặc măng sông", "Đúng, PE nối bằng keo dán chuyên dụng", "Đúng, giống hệt cách nối ống CPVC", "Sai, PE chỉ nối được bằng ren ống"], ["Vì sao ống PPR dẫn nước nóng thường dùng cấp PN20 thay vì PN10?", "Nhựa yếu đi khi nóng nên cần thành ống dày", "PN20 có đường kính trong lớn hơn PN10", "PN20 có hệ số giãn nở nhỏ hơn ống thép", "PN20 có giá rẻ hơn PN10 cùng cỡ ống"], ["Cùng đường kính ngoài, ống nhựa có SDR nhỏ hơn thì kích thước thay đổi thế nào?", "Thành dày hơn, đường kính trong nhỏ hơn", "Thành mỏng hơn, đường kính trong lớn hơn", "Chịu áp thấp hơn, tiết diện lớn hơn", "Không khác gì về kích thước bên trong"], ["Vì sao không dùng đường kính ngoài của ống nhựa để tính thủy lực?", "Đường kính trong nhỏ hơn và đổi theo PN", "Đường kính ngoài luôn nhỏ hơn thực tế", "Ống nhựa không có đường kính trong", "Thủy lực chỉ phụ thuộc chiều dài ống"], ["Vì sao không nên để ống PPR đi lộ dưới nắng trực tiếp?", "Tia UV làm nhựa lão hóa", "Nắng làm ống co ngắn lại", "PPR dẫn nhiệt rất tốt", "Nắng làm tăng áp lực tĩnh"], ["Vì sao chỗ nối ống thép với phụ tùng đồng thau dễ bị gỉ nhanh?", "Ăn mòn điện hóa giữa hai kim loại", "Đồng thau hút ẩm từ không khí", "Ren đồng thau quá mềm nên hở", "Nước chảy nhanh hơn ở chỗ nối"], ["Van giảm áp khác van phòng ngừa ở điểm nào?", "Giảm áp làm việc thường xuyên, phòng ngừa chỉ xả khi quá áp", "Giảm áp chỉ xả khi quá áp, phòng ngừa làm việc thường xuyên", "Hai van làm việc giống hệt nhau, chỉ khác kích thước lắp đặt", "Hai van đều chỉ cho nước chảy theo một chiều nhất định"], ["Vì sao phải đặt van một chiều sau máy bơm?", "Tránh nước chảy ngược làm bơm quay ngược", "Để tăng áp lực đầu đẩy của máy bơm", "Để giảm lưu lượng bơm vào ban đêm", "Để xả khí trong ống đẩy của bơm"], ["Vì sao đặt van một chiều trên ống ra từ đáy két nước?", "Không cho nước lên qua đáy làm khuấy cặn", "Để tăng áp lực cho các tầng phía trên", "Để két đầy nhanh hơn khi bơm chạy", "Để thay thế van phao đặt trong két"], ["Vòi nước kiểu van mở chậm được dùng để hạn chế hiện tượng gì?", "Sức va thủy lực (búa nước)", "Rò rỉ tại mối nối ren", "Đóng cặn trong đồng hồ", "Giãn nở nhiệt của ống"], ["Theo công thức Joukowsky, độ tăng áp khi đóng van đột ngột phụ thuộc vào gì?", "Tốc độ truyền sóng và độ giảm vận tốc", "Chiều dài ống và đường kính của van", "Nhiệt độ nước và độ dốc của ống", "Số tầng nhà và cao độ két nước"], ["Vì sao cùng một độ giảm vận tốc, ống nhựa chịu búa nước nhẹ hơn ống thép?", "Tốc độ truyền sóng trong ống nhựa nhỏ hơn", "Vận tốc nước trong ống nhựa luôn lớn hơn", "Đường kính trong ống nhựa luôn lớn hơn", "Trong ống nhựa không có sóng áp lực"], ["Vì sao các tầng thấp của nhà cao tầng dùng két mái cần van giảm áp?", "Áp lực tĩnh ở tầng thấp vượt giới hạn cho phép", "Tầng thấp thiếu áp lực so với các tầng cao", "Tầng thấp dùng ít nước hơn các tầng cao", "Két mái không cấp được nước xuống tầng thấp"], ["Ống dẫn nước vào nhà d = 50 mm dẫn lưu lượng q = 2,0 l/s. Vận tốc nước trong ống là bao nhiêu?", "1,02 m/s", "0,25 m/s", "10,2 m/s", "0,51 m/s"], ["Nước chảy qua đồng hồ cỡ d = 20 mm với vận tốc 1,5 m/s. Lưu lượng là bao nhiêu?", "0,471 l/s", "1,885 l/s", "4,71 l/s", "0,047 l/s"], ["Đổi lưu lượng 0,471 l/s sang đơn vị m³/h được bao nhiêu?", "1,70 m³/h", "0,131 m³/h", "28,3 m³/h", "1696 m³/h"], ["Nhà tập thể 600 người, tiêu chuẩn dùng nước 100 l/người.ngđ. Lưu lượng ngày đêm là bao nhiêu?", "60 m³/ngđ", "6 m³/ngđ", "600 m³/ngđ", "60000 m³/ngđ"], ["Công trình có Qngđ = 16 m³/ngđ. Theo điều kiện Qngđ ≤ 2Qđtr, lưu lượng đặc trưng tối thiểu của đồng hồ là bao nhiêu?", "8 m³/h", "32 m³/h", "0,67 m³/h", "16 m³/h"], ["Đồng hồ cánh quạt cỡ 30 mm có S = 1,3, lưu lượng tính toán q = 1,2 l/s. Tổn thất áp lực qua đồng hồ là bao nhiêu?", "1,87 m", "1,56 m", "2,03 m", "0,90 m"], ["Đồng hồ tuốc bin cỡ 50 mm có S = 0,0265, lưu lượng q = 5 l/s. Tổn thất áp lực qua đồng hồ là bao nhiêu?", "0,66 m", "0,13 m", "6,63 m", "0,005 m"], ["Nhà có Qngđ = 16 m³/ngđ và qtt = 1,2 l/s. Đồng hồ cánh quạt cỡ 25 mm có Qđtr 7 m³/h, Qmax 1,00 l/s. Cỡ 30 mm có Qđtr 10 m³/h, Qmax 1,40 l/s. Cỡ 40 mm có Qđtr 20 m³/h, Qmax 2,80 l/s. Cỡ nhỏ nhất đạt cả hai điều kiện là cỡ nào?", "30 mm", "25 mm", "40 mm", "20 mm"], ["Văn phòng có Qngđ = 7,5 m³/ngđ và qtt = 1,8 l/s. Đồng hồ cánh quạt cỡ 20 mm có Qđtr 5 m³/h, Qmax 0,70 l/s. Cỡ 30 mm có Qđtr 10 m³/h, Qmax 1,40 l/s. Cỡ 40 mm có Qđtr 20 m³/h, Qmax 2,80 l/s. Cỡ nhỏ nhất đạt cả hai điều kiện là cỡ nào?", "40 mm", "20 mm", "30 mm", "50 mm"], ["Đồng hồ cánh quạt cỡ 40 mm có S = 0,32, lưu lượng khi dùng nước sinh hoạt q = 1,8 l/s. Tổn thất và kết luận theo TCVN 4513:1988 là gì?", "1,04 m, đạt", "0,58 m, đạt", "1,04 m, không đạt", "3,24 m, không đạt"], ["Đồng hồ DN15 ghi Q3 = 2,5 m³/h, R100. Lưu lượng tối thiểu Q1 là bao nhiêu?", "25 l/h", "250 m³/h", "40 l/h", "2,5 l/h"], ["Đồng hồ ghi Q3 = 4 m³/h, R80. Lưu lượng chuyển tiếp Q2 là bao nhiêu?", "80 l/h", "50 l/h", "5,0 m³/h", "6,4 m³/h"], ["Đồng hồ ghi Q3 = 2,5 m³/h. Lưu lượng quá tải Q4 là bao nhiêu?", "3,125 m³/h", "4,0 m³/h", "2,0 m³/h", "1,56 m³/h"], ["Đồng hồ mới ghi 200 lít, thùng đo được 196 lít, giới hạn sai số ±2 %. Sai số và kết luận là gì?", "+2,04 %, không đạt", "+2,00 %, đạt", "−2,04 %, đạt", "+4,00 %, không đạt"], ["Đồng hồ cũ ghi 100 lít, thùng đo được 104 lít. Sai số của đồng hồ là bao nhiêu?", "−3,85 %", "−4,00 %", "+3,85 %", "+4,00 %"], ["Ống PPR đường kính ngoài 32 mm, cấp PN20, chiều dày 5,4 mm. Đường kính trong là bao nhiêu?", "21,2 mm", "26,6 mm", "37,4 mm", "10,8 mm"], ["Ống PPR 32 mm PN20 có đường kính trong 21,2 mm, PN10 có 26,2 mm. Tỷ lệ tiết diện PN20 so với PN10 là bao nhiêu?", "0,655", "0,809", "1,527", "0,345"], ["Ống PPR dài 20 m, α = 0,15 mm/(m.K), lắp ở 25 °C và làm việc ở 65 °C. Độ giãn dài là bao nhiêu?", "120 mm", "195 mm", "75 mm", "12 mm"], ["Mực nước két mái cao hơn sàn tầng 1 là 68 m, vòi đặt cao 1,0 m trên sàn tầng 1. Áp lực tĩnh tại vòi tầng 1 và kết luận là gì?", "67,0 m, vượt giới hạn 60 m", "69,0 m, vượt giới hạn 60 m", "64,7 m, vượt giới hạn 60 m", "57,1 m, không vượt 60 m"], ["Ống thép có tốc độ truyền sóng a = 1000 m/s, vận tốc nước giảm đột ngột 1,0 m/s. Độ tăng áp theo Joukowsky là bao nhiêu?", "102 m", "1000 m", "10,2 m", "9,81 m"]];
+const SALT = "epu";
+const NPER = 40;
+const MINUTES = 40;
+const NQ = (NPER>0 && NPER<QS.length) ? NPER : QS.length;
+
+/* SHA-256 thuần JS, chạy được cả khi mở file trực tiếp */
+function sha256(str){
+  const b=new TextEncoder().encode(str);const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const l=b.length,n=((l+9+63)>>6)<<6,m=new Uint8Array(n);m.set(b);m[l]=0x80;const bits=l*8;
+  for(let i=0;i<4;i++)m[n-1-i]=(bits>>>(8*i))&255;m[n-5]=Math.floor(bits/2**32)&255;
+  const W=new Uint32Array(64),r=(x,k)=>(x>>>k)|(x<<(32-k));
+  for(let o=0;o<n;o+=64){
+    for(let i=0;i<16;i++)W[i]=(m[o+4*i]<<24)|(m[o+4*i+1]<<16)|(m[o+4*i+2]<<8)|m[o+4*i+3];
+    for(let i=16;i<64;i++){const s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0;}
+    let[a,bb,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+W[i])|0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    H=[H[0]+a,H[1]+bb,H[2]+c,H[3]+d,H[4]+e,H[5]+f,H[6]+g,H[7]+h].map(x=>x|0);
+  }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+const norm=s=>s.normalize("NFC").replace(/\s+/g," ").trim();
+function maBam(mssv,ten,diem){return sha256(SALT+"|"+norm(mssv).toUpperCase()+"|"+norm(ten).toUpperCase()+"|"+diem).slice(0,6).toUpperCase();}
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let exam=[],ans=[],cur=0,t0=0,tick=null,student={};
+$("nq").textContent=NQ;
+if(MINUTES>0)$("tl").textContent=", thời gian làm bài "+MINUTES+" phút, hết giờ bài được nộp tự động";
+const mmss=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+
+$("start").onclick=()=>{
+  const m=norm($("mssv").value),t=norm($("ten").value);
+  if(!m||!t){$("e1").textContent="Nhập đủ mã số sinh viên và họ tên trước khi bắt đầu.";return;}
+  student={m,t};
+  exam=shuffle(QS.map(q=>({q:q[0],o:shuffle([0,1,2,3].map(i=>({t:q[1+i],ok:i===0})))}))).slice(0,NQ);
+  ans=new Array(exam.length).fill(-1);
+  $("who").textContent=m+" · "+t;$("tot").textContent=exam.length;
+  const g=$("grid");g.innerHTML="";
+  exam.forEach((_,i)=>{const b=document.createElement("button");b.textContent=i+1;b.onclick=()=>go(i);g.appendChild(b);});
+  $("s1").classList.add("hidden");$("s2").classList.remove("hidden");
+  t0=Date.now();if(MINUTES>0){$("clkL").textContent="Còn lại";$("clk").textContent=mmss(MINUTES*60);}
+  tick=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);
+    if(MINUTES>0){const r=MINUTES*60-s;$("clk").textContent=mmss(Math.max(0,r));if(r<=0)nopBai();}
+    else $("clk").textContent=mmss(s);},1000);
+  window.onbeforeunload=()=>"Bài làm chưa nộp";
+  go(0);
+};
+
+function go(i){
+  cur=i;const q=exam[i];
+  $("qn").textContent="CÂU "+(i+1)+" / "+exam.length;$("qt").textContent=q.q;
+  const box=$("opts");box.innerHTML="";
+  q.o.forEach((o,k)=>{const b=document.createElement("button");b.className="opt"+(ans[i]===k?" sel":"");
+    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span><span></span>';b.lastChild.textContent=o.t;
+    b.onclick=()=>{ans[i]=k;refresh();go(i);};box.appendChild(b);});
+  $("prev").disabled=i===0;$("next").disabled=i===exam.length-1;refresh();
+}
+function refresh(){
+  const d=ans.filter(a=>a>=0).length;$("cnt").textContent=d;$("prog").style.width=(100*d/exam.length)+"%";
+  [...$("grid").children].forEach((b,i)=>{b.className=(ans[i]>=0?"done":"")+(i===cur?" cur":"");});
+}
+$("prev").onclick=()=>cur>0&&go(cur-1);
+$("next").onclick=()=>cur<exam.length-1&&go(cur+1);
+document.addEventListener("keydown",e=>{
+  if($("s2").classList.contains("hidden")||!$("mdl").classList.contains("hidden"))return;
+  const k=e.key.toUpperCase();
+  if("ABCD".includes(k)&&k.length===1){ans[cur]="ABCD".indexOf(k);go(cur);}
+  else if(e.key==="ArrowRight")$("next").click();else if(e.key==="ArrowLeft")$("prev").click();
+});
+
+$("submit").onclick=()=>{
+  const left=ans.filter(a=>a<0).length;
+  $("mTxt").textContent=left?("Còn "+left+" câu chưa trả lời, các câu này sẽ tính là sai. Nộp bài ngay?"):"Nộp bài và xem kết quả?";
+  $("mdl").classList.remove("hidden");
+};
+$("mNo").onclick=()=>$("mdl").classList.add("hidden");
+$("mYes").onclick=()=>nopBai();
+function nopBai(){
+  if(!exam.length)return;
+  $("mdl").classList.add("hidden");clearInterval(tick);window.onbeforeunload=null;
+  const c=exam.reduce((s,q,i)=>s+(ans[i]>=0&&q.o[ans[i]].ok?1:0),0);
+  const diem=(Math.round(c/exam.length*1000)/100).toFixed(2);
+  $("rM").textContent=student.m;$("rT").textContent=student.t;$("rD").textContent=diem+" / 10";
+  $("rC").textContent=c+" / "+exam.length;$("rH").textContent=maBam(student.m,student.t,diem);
+  $("rTime").textContent=new Date().toLocaleString("vi-VN");
+  $("s2").classList.add("hidden");$("s3").classList.remove("hidden");
+  exam=[];ans=[];
+}
+$("print").onclick=()=>window.print();
+</script>
+</body>
+</html>

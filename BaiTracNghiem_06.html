@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Cấp nước</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2430;--mute:#667085;--line:#dde2ea;--pri:#0b4f9c;--pri2:#e8f0fb;--ok:#1b7f4b;--warn:#b54708}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+header h1{font-size:20px;margin:0 0 2px}
+header p{margin:0;color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:16px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text]{width:100%;padding:10px 12px;font-size:16px;border:1px solid var(--line);border-radius:8px}
+input[type=text]:focus{outline:2px solid var(--pri);border-color:var(--pri)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:9px 16px}
+button.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+.err{color:#b42318;font-size:14px;min-height:20px;margin-top:6px}
+.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mute)}
+.top b{color:var(--ink)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pri);width:0}
+.qn{font-size:13px;color:var(--pri);font-weight:700;letter-spacing:.3px}
+.qt{font-size:18px;font-weight:600;margin:4px 0 14px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.opt:hover{border-color:var(--pri)}
+.opt.sel{border-color:var(--pri);background:var(--pri2)}
+.opt .k{flex:0 0 26px;height:26px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:#fff}
+.opt.sel .k{background:var(--pri);border-color:var(--pri);color:#fff}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.grid button{padding:6px 0;font-size:13px}
+.grid button.done{background:var(--pri2);border-color:#9dbbe6}
+.grid button.cur{outline:2px solid var(--pri)}
+.sub{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.res table{width:100%;border-collapse:collapse;font-size:17px}
+.res td{padding:12px 6px;border-bottom:1px solid var(--line)}
+.res td:first-child{color:var(--mute);width:40%}
+.res td:last-child{font-weight:700}
+.hash{font-family:Consolas,"Courier New",monospace;font-size:24px;letter-spacing:3px;color:var(--pri)}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(15,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-width:420px;width:100%}
+@media print{body{background:#fff}.noprint{display:none!important}.card{border:1px solid #999}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Trắc nghiệm Cấp thoát nước trong công trình</h1>
+  <p>Chương 04 Bài 6 · Khoa Cơ khí, Ô tô và Xây dựng · Trường Đại học Điện lực</p>
+</header>
+
+<section id="s1" class="card">
+  <p style="margin-top:0">Bài gồm <b id="nq"></b> câu, mỗi câu có một đáp án đúng<span id="tl"></span>. Câu hỏi và phương án được xáo trộn riêng cho từng lượt làm. Điểm tính theo thang 10.</p>
+  <label for="mssv">Mã số sinh viên</label>
+  <input id="mssv" type="text" autocomplete="off" placeholder="Ví dụ 2081110123">
+  <label for="ten">Họ và tên</label>
+  <input id="ten" type="text" autocomplete="off" placeholder="Ví dụ Nguyễn Văn An">
+  <div class="err" id="e1"></div>
+  <button class="pri" id="start">Bắt đầu làm bài</button>
+</section>
+
+<section id="s2" class="hidden">
+  <div class="card">
+    <div class="top"><span><b id="who"></b></span><span>Đã trả lời <b id="cnt">0</b>/<b id="tot"></b> · <span id="clkL">Thời gian</span> <b id="clk">00:00</b></span></div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+  <div class="card">
+    <div class="qn" id="qn"></div>
+    <div class="qt" id="qt"></div>
+    <div id="opts"></div>
+    <div class="nav"><button id="prev">← Câu trước</button><button id="next">Câu sau →</button></div>
+  </div>
+  <div class="card">
+    <div class="grid" id="grid"></div>
+    <div class="sub"><span class="note" style="margin:0">Bấm số để chuyển nhanh đến câu tương ứng. Ô tô xanh là câu đã trả lời.</span><button class="pri" id="submit">Nộp bài</button></div>
+  </div>
+</section>
+
+<section id="s3" class="card res hidden">
+  <h2 style="margin-top:0;font-size:20px">Kết quả trắc nghiệm</h2>
+  <table>
+    <tr><td>MSSV</td><td id="rM"></td></tr>
+    <tr><td>Họ và tên</td><td id="rT"></td></tr>
+    <tr><td>Điểm</td><td id="rD"></td></tr>
+    <tr><td>Số câu đúng</td><td id="rC"></td></tr>
+    <tr><td>Mã băm</td><td class="hash" id="rH"></td></tr>
+  </table>
+  <p class="note">Nộp thời điểm <span id="rTime"></span>. Chụp màn hình hoặc in trang này để nộp cho giảng viên. Mã băm gắn với MSSV, họ tên và điểm, sửa bất kỳ thông tin nào thì mã sẽ không còn khớp.</p>
+  <div class="noprint"><button id="print">In kết quả</button></div>
+</section>
+</div>
+
+<div class="modal hidden" id="mdl"><div class="card">
+  <p id="mTxt" style="margin-top:0"></p>
+  <div class="nav"><button id="mNo">Làm tiếp</button><button class="pri" id="mYes">Nộp bài</button></div>
+</div></div>
+
+<script>
+const QS = [["Tải trọng thủy lực nước xám lên bãi lọc trồng cây theo bài giảng nằm trong khoảng nào?", "50 đến 150 L/m².ngày", "40 đến 200 L/m².ngày", "5 đến 15 L/m².ngày", "500 đến 1 500 L/m².ngày"], ["Tải trọng thủy lực thiết kế giếng thấm theo bài giảng nằm trong khoảng nào?", "40 đến 200 L/m².ngày", "50 đến 150 L/m².ngày", "4 đến 20 L/m².ngày", "400 đến 2 000 L/m².ngày"], ["Diện tích bãi lọc trồng cây tính gần đúng theo số người sử dụng là bao nhiêu?", "1 đến 4 m²/người", "0,1 đến 0,4 m²/người", "10 đến 40 m²/người", "4 đến 8 m²/người"], ["Quá trình hiếu khí trong bãi lọc trồng cây chủ yếu diễn ra ở đâu?", "Lớp vật liệu 15 đến 20 cm trên cùng", "Toàn bộ chiều dày lớp vật liệu lọc", "Lớp sỏi dưới cùng quanh ống thu", "Lớp vật liệu 1,5 đến 2 m trên cùng"], ["Hằng số k_BOD trong công thức (6.18) khi xử lý bậc 2 lấy xấp xỉ bằng bao nhiêu?", "0,1", "0,35", "1,0", "0,01"], ["Tải trọng chất hữu cơ lên bãi lọc trồng cây có thể lấy bằng bao nhiêu?", "50 kg BOD5/ha.ngày", "180 kg BOD5/ha.ngày", "50 kg BOD5/m².ngày", "5 kg BOD5/ha.ngày"], ["Với nền đất sét, đáy giếng thấm phải cách mực nước ngầm cao nhất không dưới bao nhiêu?", "0,6 m", "1,5 m", "0,15 m", "3,0 m"], ["Với nền đất cát, đáy giếng thấm phải cách mực nước ngầm cao nhất không dưới bao nhiêu?", "1,5 m", "0,6 m", "0,5 m", "0,2 m"], ["Khi mực nước ngầm cao, lớp cát chèn quanh giếng thấm phải dày tối thiểu bao nhiêu?", "0,5 m", "0,15 m", "1,5 m", "0,05 m"], ["Loại bãi lọc trồng cây nào ít được áp dụng ở các nước nhiệt đới?", "Bãi lọc trồng cây ngập nước", "Bãi lọc dòng chảy ngầm nằm ngang", "Bãi lọc dòng chảy ngầm thẳng đứng", "Bãi lọc kết hợp ngang và đứng"], ["Loài cây nào sau đây thường được trồng trên bãi lọc trồng cây?", "Sậy", "Bạch đàn", "Keo lá tràm", "Xương rồng"], ["Các biện pháp khử trùng nước sau bãi lọc được nêu trong bài gồm những gì?", "Tia cực tím, hợp chất Clo, ozone", "Lắng, lọc cát, keo tụ bằng phèn", "Sục khí, tuần hoàn bùn hoạt tính", "Trung hòa bằng đá vôi, đôlômít"], ["Lượng rác sinh hoạt trong nhà theo bài giảng ước tính khoảng bao nhiêu?", "1,2 kg/người.ngày", "12 kg/người.ngày", "0,12 kg/người.ngày", "1,2 kg/người.tuần"], ["Khi mở bơm bằng tay, ngăn chứa của trạm bơm thoát nước trong nhà phải chứa được lượng nước thải trong bao lâu?", "6 giờ thải nước lớn nhất", "1 giờ thải nước lớn nhất", "10 phút thải nước lớn nhất", "24 giờ thải nước trung bình"], ["Theo TCVN 4474:1987 điều 7.4, bơm tự động được khởi động không quá bao nhiêu lần trong 1 giờ?", "6 lần", "10 lần", "4 lần", "12 lần"], ["Trạm bơm thoát nước trong nhà thường được chia thành những ngăn nào?", "Ngăn hút và ngăn đặt bơm", "Ngăn lắng và ngăn lọc", "Ngăn tách mỡ và ngăn tách dầu", "Ngăn điều hòa và ngăn khử trùng"], ["Thời gian lưu nước trong bể lắng cát khoảng bao lâu?", "Khoảng 1 phút", "Khoảng 10 phút", "Khoảng 1 giờ", "Khoảng 5 giây"], ["Tốc độ nước chảy qua bể lắng cát theo bài giảng là bao nhiêu?", "0,1 đến 0,3 m/s", "0,003 đến 0,005 m/s", "1 đến 3 m/s", "0,01 đến 0,03 m/s"], ["Cát được lấy ra khỏi bể lắng cát theo chu kỳ nào?", "Hai ngày một lần", "Mỗi giờ một lần", "Hai tháng một lần", "Mỗi năm một lần"], ["Thời gian lưu nước thải trong bể lắng bùn là bao nhiêu?", "5 đến 10 phút", "1 đến 2 phút", "1 đến 1,5 giờ", "30 đến 60 giây"], ["Vận tốc nước chảy qua bể lắng bùn lấy trong khoảng nào?", "0,003 đến 0,005 m/s", "0,1 đến 0,3 m/s", "0,03 đến 0,05 m/s", "0,3 đến 0,5 m/s"], ["Lượng nước rửa một ô tô theo bài giảng là bao nhiêu?", "150 đến 550 lít", "15 đến 55 lít", "1 500 đến 5 500 lít", "50 đến 150 lít"], ["Lượng chất bẩn giữ lại khi rửa một ô tô du lịch là bao nhiêu?", "3 đến 4 lít", "6 đến 10 lít", "30 đến 40 lít", "0,3 đến 0,4 lít"], ["Dung tích tối thiểu của bể tách mỡ là bao nhiêu?", "50 lít", "500 lít", "5 lít", "50 m³"], ["Thời gian lưu nước trong bể tách mỡ phục vụ nhà hàng là bao nhiêu?", "1 giờ", "1,5 giờ", "10 phút", "6 giờ"], ["Thời gian lưu nước trong bể tách mỡ phục vụ căn hộ là bao nhiêu?", "1,5 giờ", "1 giờ", "15 phút", "2,5 giờ"], ["Dung tích phần chứa mỡ bằng bao nhiêu phần trăm dung tích toàn phần của bể tách mỡ?", "25%", "50%", "10%", "75%"], ["Chiều sâu nước tối thiểu trong bể tách mỡ là bao nhiêu?", "1 m", "0,5 m", "2 m", "0,3 m"], ["Dung tích bể tách dầu phải chứa tối thiểu bao nhiêu lần lưu lượng nước thải theo giây lớn nhất?", "30 lần", "3 lần", "300 lần", "6 lần"], ["Bể tách dầu thường được đặt ở loại công trình nào?", "Gara, bãi đỗ ô tô, xưởng ô tô", "Nhà ăn, nhà hàng, bếp tập thể", "Nhà rửa rau, chế biến nông sản", "Nhà máy xi mạ, sản xuất ắc quy"], ["Vật liệu lọc dùng trong bể trung hòa nước thải chứa axit là gì?", "Đá vôi, phấn đôlômít", "Cát thạch anh, sỏi", "Than hoạt tính dạng hạt", "Hạt nhựa xốp nổi"], ["Chiều rộng xênô thường không lớn hơn bao nhiêu?", "50 đến 60 cm", "5 đến 10 cm", "1,5 đến 2 m", "20 đến 30 cm"], ["Xênô bố trí về một phía mái thường dùng cho nhà có chiều rộng như thế nào?", "Nhỏ hơn 12 m", "Lớn hơn 12 m", "Nhỏ hơn 24 m", "Lớn hơn 24 m"], ["Để hạn chế dòng vào ống đứng, chiều cao phần khe hở của lưới chắn không lớn hơn bao nhiêu?", "10 cm", "30 cm", "1 cm", "50 cm"], ["Đường kính lưới chắn và phễu thu thường bằng bao nhiêu lần đường kính ống đứng?", "1,5 đến 2 lần", "3 đến 4 lần", "0,5 đến 1 lần", "10 đến 12 lần"], ["Ống kiểm tra trên ống đứng thoát nước mưa đặt ở độ cao khoảng bao nhiêu?", "Khoảng 1 m", "Khoảng 0,15 m", "Khoảng 2,5 m", "Khoảng 4 m"], ["Chiều dài ống tháo nước mưa ra mạng lưới sân nhà không lớn hơn bao nhiêu?", "10 đến 15 m", "1 đến 1,5 m", "30 đến 50 m", "100 đến 150 m"], ["Chiều sâu tối thiểu đặt ống ngầm dưới nhà khi có ô tô qua lại, tính từ đỉnh ống, là bao nhiêu?", "0,7 m", "0,4 m", "0,2 m", "0,07 m"], ["Trong công thức Q = K.F.q5/10000 của TCVN 4474:1987, hệ số K lấy bằng bao nhiêu?", "2", "1", "1,2", "0,3"], ["Cường độ mưa q5 của Hà Nội theo bảng 7.1 trong bài giảng là bao nhiêu?", "484,6 L/s.ha", "9,1 L/s.ha", "48,46 L/s.ha", "4 846 L/s.ha"], ["Vì sao nước thải sau bể tự hoại cần được xử lý tiếp trước khi xả?", "Vẫn còn chất hữu cơ, nitơ, phốt pho, mầm bệnh", "Nước đã sạch, chỉ còn màu và mùi nhẹ", "Chỉ để hạ nhiệt độ nước thải xuống", "Để thu hồi khí sinh học từ nước thải"], ["Vì sao bãi lọc dòng chảy đứng cấp nước gián đoạn nitrat hóa tốt hơn dòng chảy ngang?", "Không khí được hút vào lớp lọc khi nước rút", "Có nhiều cây hơn trên cùng diện tích", "Nước chảy nhanh nên ít cặn bám vào hạt", "Lớp vật liệu lọc mịn hơn nên giữ nitơ"], ["Ưu điểm chính của bãi lọc dòng chảy nằm ngang là gì?", "Không phải bơm nước", "Nitrat hóa hiệu quả nhất", "Chiếm diện tích nhỏ nhất", "Không bao giờ bị tắc"], ["Phốt pho và kim loại nặng trong bãi lọc được giữ lại chủ yếu nhờ cơ chế nào?", "Hấp phụ lên vật liệu lọc", "Bay hơi vào không khí", "Khử nitrat trong vùng yếm khí", "Lắng lại trong ống thu nước"], ["Vai trò làm ống thở của thực vật trong bãi lọc được hiểu như thế nào?", "Đưa oxy xuống vùng rễ và vật liệu lọc", "Hút toàn bộ nước thải lên để bốc hơi", "Thải khí CO2 để trung hòa nước kiềm", "Giữ nhiệt cho lớp vật liệu vào mùa đông"], ["Vì sao không dùng giếng thấm ở nơi có mực nước ngầm cao?", "Nước thải chưa xử lý đủ sẽ vào nước ngầm", "Giếng sẽ bị nổi lên do áp lực đẩy nổi", "Vi sinh vật trong giếng phát triển quá nhanh", "Nước ngầm làm tăng tải trọng thủy lực thiết kế"], ["Vì sao nước sau bãi lọc chưa khử trùng chỉ được tưới ngầm hoặc tưới nhỏ giọt?", "Tránh phát tán mầm bệnh ra môi trường", "Tiết kiệm lượng nước tưới cho cây", "Tránh làm tắc các vòi phun mưa", "Giữ cho nhiệt độ nước tưới ổn định"], ["So với bãi lọc ngập nước, nhược điểm chính của bãi lọc dòng chảy ngầm là gì?", "Dễ bị tắc", "Sinh nhiều ruồi muỗi", "Gây ô nhiễm không khí", "Hiệu quả làm sạch thấp"], ["Trong trạm xử lý cục bộ, vì sao phải tuần hoàn nước từ bể hiếu khí về bể thiếu khí?", "Để khử nitrat do bể hiếu khí tạo ra", "Để giảm lượng oxy cấp cho bể hiếu khí", "Để lắng cát trước khi sục khí", "Để khử trùng nước trước bể hiếu khí"], ["Vai trò của bể điều hòa trong trạm xử lý nước thải cục bộ là gì?", "Làm đều lưu lượng và nồng độ nước thải", "Khử trùng nước thải trước khi xả ra", "Tách dầu mỡ nổi trên mặt nước thải", "Phân hủy bùn dư bằng vi sinh kỵ khí"], ["Khi dùng công nghệ màng MBR, có thể bỏ bể nào trong dây chuyền xử lý?", "Bể lắng thứ cấp", "Bể điều hòa", "Bể thiếu khí", "Song chắn rác"], ["Theo QCVN 98:2025/BNNMT, công trình xử lý tại chỗ từ 20 m³/ngày trở lên phải đạt quy chuẩn nào?", "QCVN 14:2025/BTNMT", "QCVN 40:2025/BTNMT", "QCVN 14:2008/BTNMT", "QCVN 07-2:2023/BXD"], ["QCVN 14:2025/BTNMT về nước thải sinh hoạt thay thế quy chuẩn nào?", "QCVN 14:2008/BTNMT", "QCVN 40:2011/BTNMT", "TCVN 4474:1987", "QCVN 07-2:2016/BXD"], ["Nước thải công nghiệp xả ra nguồn tiếp nhận phải đạt quy chuẩn nào?", "QCVN 40:2025/BTNMT", "QCVN 14:2025/BTNMT", "QCVN 98:2025/BNNMT", "TCVN 7957:2023"], ["Cột A của QCVN 14:2025/BTNMT áp dụng trong trường hợp nào?", "Xả vào nguồn nước dùng cấp nước sinh hoạt", "Xả vào cống thoát nước chung đô thị", "Xả vào mọi nguồn nước mặt và nước ngầm", "Công trình có công suất dưới 2 m³/ngày"], ["Trong bài học này, TCVN 7957:2023 được dùng chủ yếu để làm gì?", "Lấy công thức cường độ mưa tính toán", "Tính dung tích bể tách mỡ nhà hàng", "Quy định giới hạn BOD5 khi xả thải", "Tính đương lượng thiết bị vệ sinh"], ["Vì sao hố bơm tự động không được làm quá nhỏ?", "Bơm khởi động quá nhiều lần, mau hỏng", "Nước thải bị lắng cặn nhiều hơn", "Bơm phải chọn công suất lớn hơn", "Mực nước báo động bị hạ thấp xuống"], ["Dung tích hữu ích của hố bơm là phần nằm giữa hai mức nước nào?", "Mức bơm chạy và mức bơm dừng", "Mức báo động và mức bơm chạy", "Đáy hố và mức bơm dừng", "Mức báo động và nắp hố bơm"], ["Van một chiều trên ống đẩy của bơm thoát nước có nhiệm vụ gì?", "Chống nước chảy ngược về hố bơm", "Điều chỉnh lưu lượng của bơm", "Xả khí tích trong ống đẩy", "Giảm áp lực tại đầu đẩy bơm"], ["Hạn chế của máy nghiền rác đặt dưới chậu rửa bếp là gì?", "Tăng chất hữu cơ và cặn cho mạng lưới", "Làm giảm lưu lượng nước thải của bếp", "Không nghiền được rau và vỏ quả", "Dùng nhiều nước sạch hơn bồn cầu xả"], ["Vì sao có thể kết hợp nước làm nguội với nước mưa trong cùng một mạng lưới?", "Chất lượng hai loại nước gần như nhau", "Nước làm nguội cần pha loãng trước khi xả", "Hai loại nước luôn có cùng lưu lượng", "Để tăng vận tốc chảy trong đường ống"], ["Nước thải sản xuất chứa axit hoặc kiềm phải xử lý thế nào trước khi vào mạng lưới chung?", "Trung hòa cục bộ trong bể trung hòa", "Cho chảy qua bể tách mỡ trước", "Pha loãng bằng nước mưa trên mái", "Cho chảy qua bể lắng cát trước"], ["Vì sao bể lắng cát có vận tốc nước lớn hơn nhiều so với bể lắng bùn?", "Chỉ giữ hạt cát nặng, cặn nhẹ trôi đi", "Để rút ngắn chiều dài của bể lắng bùn", "Vì cát nhẹ hơn bùn nên khó lắng hơn", "Để kéo dài thời gian lưu nước trong bể"], ["Vì sao ống vào và ống ra của bể tách mỡ được đặt ngập trong nước?", "Để mỡ nổi phía trên không bị cuốn theo", "Để tăng vận tốc nước chảy qua bể", "Để thu mỡ trực tiếp qua ống ra", "Để giảm dung tích phần chứa mỡ"], ["Vì sao không cho nước thải khu vệ sinh chảy vào bể tách mỡ?", "Bể quá tải, khuấy trộn nên mỡ khó tách", "Nước khu vệ sinh chứa nhiều dầu khoáng", "Bể tách mỡ không có nắp đậy kín", "Nước khu vệ sinh có nhiệt độ quá cao"], ["Vì sao bể tách dầu phải làm bằng vật liệu chịu lửa và bịt kín?", "Dầu xăng dễ cháy, cống có khí mê tan", "Dầu ăn mòn bê tông rất nhanh", "Để giữ nhiệt giúp dầu nổi nhanh", "Để dầu không bay hơi mất giá trị"], ["Theo TCVN 4474:1987, trên ống dẫn nước thải có chất lỏng dễ cháy tới bể thu phải đặt thiết bị gì?", "Van chắn lửa", "Van giảm áp", "Van xả khí tự động", "Van phao"], ["Vì sao không đổ nước sôi để đẩy mỡ trong bể tách mỡ đi?", "Mỡ sẽ đông lại trong cống phía sau", "Nước sôi làm vỡ vách ngăn của bể", "Nước sôi biến mỡ thành dầu khoáng", "Nước sôi làm tăng thời gian lưu nước"], ["Xênô bố trí ngoài tường bao có ưu điểm gì?", "Chống dột cho công trình tốt hơn", "Tiết kiệm vật liệu làm xênô hơn", "Luôn đẹp hơn về mặt kiến trúc", "Không cần lắp lưới chắn rác"], ["Vì sao ống đứng thoát nước mưa nên đặt ngoài tường bao?", "Phòng ống vỡ làm nước rò vào phòng", "Để ống chịu được vận tốc lớn hơn", "Để giảm số lượng phễu thu trên mái", "Để không phải đặt ống kiểm tra"], ["Lưới chắn rác bảo vệ ống đứng khi mưa vượt cường độ tính toán bằng cách nào?", "Hạn dòng, nước dâng tạm ở xênô rồi thoát dần", "Mở rộng khe hở cho nước vào ống nhanh hơn", "Chuyển nước mưa sang ống thoát nước thải", "Giữ lại toàn bộ lượng nước mưa trên mái"], ["Chân ống đứng xả ra hè nhà bằng cút 45° cần có bệ đỡ để làm gì?", "Chống tuột cút khi nước chảy mạnh", "Chống nước dềnh ngược vào ống", "Giảm tiếng ồn khi nước chảy", "Làm chỗ lắp ống kiểm tra"], ["Vì sao phải cộng 30% diện tích tường vào diện tích thu nước mưa của mái?", "Mưa hắt vào tường rồi chảy xuống mái", "Tường làm tăng diện tích hình chiếu mái", "Để kể đến nước ngưng tụ trên tường", "Để thay thế cho hệ số an toàn 1,2"], ["Trong hệ thoát nước mưa kiểu xi phông, ống nhánh ngang có đặc điểm gì?", "Có thể đặt không dốc", "Phải dốc hơn hệ trọng lực", "Luôn chảy không đầy ống", "Bắt buộc dùng ống bê tông"], ["Hệ thoát nước mưa kiểu xi phông phù hợp nhất với loại công trình nào?", "Nhà xưởng, trung tâm thương mại mái lớn", "Nhà ở riêng lẻ có mái nhỏ", "Nhà mái dốc lợp ngói truyền thống", "Nhà tạm một tầng mái tôn nhỏ"], ["Trong công thức q = Ψ.F.h5/300, vì sao h5 phải tính bằng mm?", "Để F.h5 ra lít, chia 300 s được L/s", "Để kết quả tính ra đơn vị m³/h", "Để cùng đơn vị cm với đường kính ống", "Vì h5 là lớp nước mưa trong một giờ"], ["Nguyên nhân phổ biến nhất gây tràn xênô và dột trần là gì?", "Lá cây, rác bịt lưới chắn và phễu thu", "Ống đứng có đường kính quá lớn", "Ống tháo ra sân nhà quá ngắn", "Mặt mái có độ dốc quá lớn"], ["Vì sao ống uPVC đặt ngoài trời nên được che nắng hoặc sơn phủ?", "Tia cực tím làm nhựa lão hóa, giòn", "Để giảm vận tốc nước trong ống", "Để ống không bị gỉ sét bề mặt", "Để tăng khả năng chịu lửa của ống"], ["So với phương pháp truyền thống, phương pháp theo TCVN 4474:1987 thường cho số ống đứng như thế nào?", "Nhiều hơn, thiên về an toàn", "Ít hơn, tiết kiệm vật liệu hơn", "Luôn bằng nhau với mọi mái", "Không tính được số ống đứng"], ["Lưu lượng nước thải giờ lớn nhất tính theo tiêu chuẩn dùng nước chủ yếu dùng để làm gì?", "Tính bể và công trình xử lý nước thải", "Chọn đường kính ống nhánh thiết bị", "Tính số ống đứng thoát nước mưa", "Chọn đường kính ống thông hơi"], ["Bãi lọc trồng cây có Q_d = 20 m³/ngày, BOD5 vào 100 mg/L, ra 25 mg/L, k_BOD = 0,1 m/ngày. Diện tích bãi lọc theo (6.18) xấp xỉ bao nhiêu?", "277 m²", "120 m²", "15 000 m²", "79 m²"], ["Bãi lọc trồng cây có Q_d = 15 m³/ngày, BOD5 vào 150 mg/L, ra 30 mg/L, xử lý bậc 2 với k_BOD = 0,1 m/ngày. Diện tích bãi lọc xấp xỉ bao nhiêu?", "241 m²", "105 m²", "69 m²", "2,4 m²"], ["Bãi lọc trồng cây rộng 200 m² phục vụ 80 người. Diện tích đơn vị là bao nhiêu?", "2,5 m²/người", "0,4 m²/người", "25 m²/người", "1,6 m²/người"], ["Bãi lọc rộng 150 m² nhận 12 m³/ngày. Tải trọng thủy lực là bao nhiêu?", "80 L/m².ngày", "0,08 L/m².ngày", "12,5 L/m².ngày", "1 800 L/m².ngày"], ["Hộ 4 người, nước thải 150 L/người.ngày, tải trọng thủy lực đất 60 L/m².ngày. Diện tích thấm cần thiết của giếng thấm là bao nhiêu?", "10 m²", "2,5 m²", "0,1 m²", "36 000 m²"], ["Giếng thấm đường kính 1,2 m, chiều cao thấm 1,5 m. Tổng diện tích thấm của đáy và thành xấp xỉ bao nhiêu?", "6,8 m²", "5,7 m²", "10,2 m²", "1,1 m²"], ["Hố bơm tự động dùng bơm Q_b = 6 L/s, khởi động không quá 6 lần mỗi giờ. Dung tích hữu ích tối thiểu theo V = Q_b.T/4 là bao nhiêu?", "900 L", "3 600 L", "1 800 L", "15 L"], ["Hố bơm dùng bơm Q_b = 8 L/s, yêu cầu khởi động không quá 4 lần mỗi giờ. Dung tích hữu ích tối thiểu theo V = Q_b.T/4 là bao nhiêu?", "1 800 L", "7 200 L", "1 200 L", "30 L"], ["Một cầu rửa dùng 450 L nước trong 10 phút, vận tốc qua bể lắng bùn V = 0,005 m/s. Diện tích mặt cắt F = q/V là bao nhiêu?", "0,15 m²", "150 m²", "9 m²", "1,5 m²"], ["Bể lắng bùn có vận tốc nước V = 0,004 m/s, thời gian lưu 8 phút. Chiều dài bể L = V.t là bao nhiêu?", "1,92 m", "0,032 m", "19,2 m", "0,48 m"], ["Nhà hàng 300 suất/ngày, a = 23 L/suất, bếp vận hành 8 giờ, k = 2, thời gian lưu 1 giờ. Dung tích bể tách mỡ tính theo lưu lượng giờ lớn nhất là bao nhiêu?", "1,73 m³", "13,8 m³", "0,86 m³", "2,59 m³"], ["Khu căn hộ 160 người, a = 23 L/người, bếp vận hành 8 giờ, k = 1,5, thời gian lưu 1,5 giờ. Dung tích bể tách mỡ tính theo lưu lượng giờ lớn nhất là bao nhiêu?", "1,04 m³", "8,28 m³", "0,69 m³", "1,38 m³"], ["Bể tách mỡ có dung tích toàn phần 1,6 m³. Dung tích phần chứa mỡ là bao nhiêu?", "0,4 m³", "0,8 m³", "0,16 m³", "1,2 m³"], ["Lưu lượng nước thải theo giây lớn nhất vào bể tách dầu là 2,5 L/s. Dung tích tối thiểu của bể là bao nhiêu?", "75 L", "7,5 L", "750 L", "2,5 L"], ["Ống đứng uPVC d = 10 cm, V_p = 2,0 m/s, Ψ = 1, h5 = 10 mm. Diện tích phục vụ giới hạn F_gh theo (7.2) là bao nhiêu?", "400 m²", "200 m²", "40 000 m²", "4 000 m²"], ["Ống đứng gang d = 15 cm, V_p = 3,0 m/s, Ψ = 1, h5 = 9,1 mm. Diện tích phục vụ giới hạn F_gh theo (7.2) xấp xỉ bao nhiêu?", "1 484 m²", "742 m²", "98,9 m²", "849 m²"], ["Mái 900 m², mỗi ống đứng có F_gh = 440 m², lấy hệ số an toàn 1,2. Số ống đứng tối thiểu là bao nhiêu?", "3 ống", "2 ống", "4 ống", "1 ống"], ["Một phễu thu phục vụ 250 m² mái tại Hà Nội, Ψ = 1, h5 = 9,1 mm. Lưu lượng q_m theo (7.3) là bao nhiêu?", "7,6 L/s", "75,8 L/s", "37,9 L/s", "2 275 L/s"], ["Mái 800 m² có 100 m² tường xây cao trên mái, tại Hà Nội q5 = 484,6 L/s.ha, K = 2. Lưu lượng nước mưa theo TCVN 4474:1987 là bao nhiêu?", "80,4 L/s", "77,5 L/s", "87,2 L/s", "40,2 L/s"], ["Chung cư 5 tầng, mỗi tầng 6 căn, mỗi căn 4 người, 120 L/người.ngày, 80% thành nước thải, K_giờ = 2,5. Lưu lượng nước thải giờ lớn nhất là bao nhiêu?", "0,333 L/s", "0,133 L/s", "1,2 L/s", "0,417 L/s"]];
+const SALT = "epu";
+const NPER = 40;
+const MINUTES = 40;
+const NQ = (NPER>0 && NPER<QS.length) ? NPER : QS.length;
+
+/* SHA-256 thuần JS, chạy được cả khi mở file trực tiếp */
+function sha256(str){
+  const b=new TextEncoder().encode(str);const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const l=b.length,n=((l+9+63)>>6)<<6,m=new Uint8Array(n);m.set(b);m[l]=0x80;const bits=l*8;
+  for(let i=0;i<4;i++)m[n-1-i]=(bits>>>(8*i))&255;m[n-5]=Math.floor(bits/2**32)&255;
+  const W=new Uint32Array(64),r=(x,k)=>(x>>>k)|(x<<(32-k));
+  for(let o=0;o<n;o+=64){
+    for(let i=0;i<16;i++)W[i]=(m[o+4*i]<<24)|(m[o+4*i+1]<<16)|(m[o+4*i+2]<<8)|m[o+4*i+3];
+    for(let i=16;i<64;i++){const s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0;}
+    let[a,bb,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+W[i])|0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    H=[H[0]+a,H[1]+bb,H[2]+c,H[3]+d,H[4]+e,H[5]+f,H[6]+g,H[7]+h].map(x=>x|0);
+  }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+const norm=s=>s.normalize("NFC").replace(/\s+/g," ").trim();
+function maBam(mssv,ten,diem){return sha256(SALT+"|"+norm(mssv).toUpperCase()+"|"+norm(ten).toUpperCase()+"|"+diem).slice(0,6).toUpperCase();}
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let exam=[],ans=[],cur=0,t0=0,tick=null,student={};
+$("nq").textContent=NQ;
+if(MINUTES>0)$("tl").textContent=", thời gian làm bài "+MINUTES+" phút, hết giờ bài được nộp tự động";
+const mmss=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+
+$("start").onclick=()=>{
+  const m=norm($("mssv").value),t=norm($("ten").value);
+  if(!m||!t){$("e1").textContent="Nhập đủ mã số sinh viên và họ tên trước khi bắt đầu.";return;}
+  student={m,t};
+  exam=shuffle(QS.map(q=>({q:q[0],o:shuffle([0,1,2,3].map(i=>({t:q[1+i],ok:i===0})))}))).slice(0,NQ);
+  ans=new Array(exam.length).fill(-1);
+  $("who").textContent=m+" · "+t;$("tot").textContent=exam.length;
+  const g=$("grid");g.innerHTML="";
+  exam.forEach((_,i)=>{const b=document.createElement("button");b.textContent=i+1;b.onclick=()=>go(i);g.appendChild(b);});
+  $("s1").classList.add("hidden");$("s2").classList.remove("hidden");
+  t0=Date.now();if(MINUTES>0){$("clkL").textContent="Còn lại";$("clk").textContent=mmss(MINUTES*60);}
+  tick=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);
+    if(MINUTES>0){const r=MINUTES*60-s;$("clk").textContent=mmss(Math.max(0,r));if(r<=0)nopBai();}
+    else $("clk").textContent=mmss(s);},1000);
+  window.onbeforeunload=()=>"Bài làm chưa nộp";
+  go(0);
+};
+
+function go(i){
+  cur=i;const q=exam[i];
+  $("qn").textContent="CÂU "+(i+1)+" / "+exam.length;$("qt").textContent=q.q;
+  const box=$("opts");box.innerHTML="";
+  q.o.forEach((o,k)=>{const b=document.createElement("button");b.className="opt"+(ans[i]===k?" sel":"");
+    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span><span></span>';b.lastChild.textContent=o.t;
+    b.onclick=()=>{ans[i]=k;refresh();go(i);};box.appendChild(b);});
+  $("prev").disabled=i===0;$("next").disabled=i===exam.length-1;refresh();
+}
+function refresh(){
+  const d=ans.filter(a=>a>=0).length;$("cnt").textContent=d;$("prog").style.width=(100*d/exam.length)+"%";
+  [...$("grid").children].forEach((b,i)=>{b.className=(ans[i]>=0?"done":"")+(i===cur?" cur":"");});
+}
+$("prev").onclick=()=>cur>0&&go(cur-1);
+$("next").onclick=()=>cur<exam.length-1&&go(cur+1);
+document.addEventListener("keydown",e=>{
+  if($("s2").classList.contains("hidden")||!$("mdl").classList.contains("hidden"))return;
+  const k=e.key.toUpperCase();
+  if("ABCD".includes(k)&&k.length===1){ans[cur]="ABCD".indexOf(k);go(cur);}
+  else if(e.key==="ArrowRight")$("next").click();else if(e.key==="ArrowLeft")$("prev").click();
+});
+
+$("submit").onclick=()=>{
+  const left=ans.filter(a=>a<0).length;
+  $("mTxt").textContent=left?("Còn "+left+" câu chưa trả lời, các câu này sẽ tính là sai. Nộp bài ngay?"):"Nộp bài và xem kết quả?";
+  $("mdl").classList.remove("hidden");
+};
+$("mNo").onclick=()=>$("mdl").classList.add("hidden");
+$("mYes").onclick=()=>nopBai();
+function nopBai(){
+  if(!exam.length)return;
+  $("mdl").classList.add("hidden");clearInterval(tick);window.onbeforeunload=null;
+  const c=exam.reduce((s,q,i)=>s+(ans[i]>=0&&q.o[ans[i]].ok?1:0),0);
+  const diem=(Math.round(c/exam.length*1000)/100).toFixed(2);
+  $("rM").textContent=student.m;$("rT").textContent=student.t;$("rD").textContent=diem+" / 10";
+  $("rC").textContent=c+" / "+exam.length;$("rH").textContent=maBam(student.m,student.t,diem);
+  $("rTime").textContent=new Date().toLocaleString("vi-VN");
+  $("s2").classList.add("hidden");$("s3").classList.remove("hidden");
+  exam=[];ans=[];
+}
+$("print").onclick=()=>window.print();
+</script>
+</body>
+</html>

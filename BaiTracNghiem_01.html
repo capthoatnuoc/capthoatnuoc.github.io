@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Cấp nước</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2430;--mute:#667085;--line:#dde2ea;--pri:#0b4f9c;--pri2:#e8f0fb;--ok:#1b7f4b;--warn:#b54708}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+header h1{font-size:20px;margin:0 0 2px}
+header p{margin:0;color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:16px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text]{width:100%;padding:10px 12px;font-size:16px;border:1px solid var(--line);border-radius:8px}
+input[type=text]:focus{outline:2px solid var(--pri);border-color:var(--pri)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:9px 16px}
+button.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+.err{color:#b42318;font-size:14px;min-height:20px;margin-top:6px}
+.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mute)}
+.top b{color:var(--ink)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pri);width:0}
+.qn{font-size:13px;color:var(--pri);font-weight:700;letter-spacing:.3px}
+.qt{font-size:18px;font-weight:600;margin:4px 0 14px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.opt:hover{border-color:var(--pri)}
+.opt.sel{border-color:var(--pri);background:var(--pri2)}
+.opt .k{flex:0 0 26px;height:26px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:#fff}
+.opt.sel .k{background:var(--pri);border-color:var(--pri);color:#fff}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.grid button{padding:6px 0;font-size:13px}
+.grid button.done{background:var(--pri2);border-color:#9dbbe6}
+.grid button.cur{outline:2px solid var(--pri)}
+.sub{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.res table{width:100%;border-collapse:collapse;font-size:17px}
+.res td{padding:12px 6px;border-bottom:1px solid var(--line)}
+.res td:first-child{color:var(--mute);width:40%}
+.res td:last-child{font-weight:700}
+.hash{font-family:Consolas,"Courier New",monospace;font-size:24px;letter-spacing:3px;color:var(--pri)}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(15,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-width:420px;width:100%}
+@media print{body{background:#fff}.noprint{display:none!important}.card{border:1px solid #999}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Trắc nghiệm Cấp thoát nước trong công trình</h1>
+  <p>Chương 1 Bài 1 · Khoa Cơ khí, Ô tô và Xây dựng · Trường Đại học Điện lực</p>
+</header>
+
+<section id="s1" class="card">
+  <p style="margin-top:0">Bài gồm <b id="nq"></b> câu, mỗi câu có một đáp án đúng<span id="tl"></span>. Câu hỏi và phương án được xáo trộn riêng cho từng lượt làm. Điểm tính theo thang 10.</p>
+  <label for="mssv">Mã số sinh viên</label>
+  <input id="mssv" type="text" autocomplete="off" placeholder="Ví dụ 2081110123">
+  <label for="ten">Họ và tên</label>
+  <input id="ten" type="text" autocomplete="off" placeholder="Ví dụ Nguyễn Văn An">
+  <div class="err" id="e1"></div>
+  <button class="pri" id="start">Bắt đầu làm bài</button>
+</section>
+
+<section id="s2" class="hidden">
+  <div class="card">
+    <div class="top"><span><b id="who"></b></span><span>Đã trả lời <b id="cnt">0</b>/<b id="tot"></b> · <span id="clkL">Thời gian</span> <b id="clk">00:00</b></span></div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+  <div class="card">
+    <div class="qn" id="qn"></div>
+    <div class="qt" id="qt"></div>
+    <div id="opts"></div>
+    <div class="nav"><button id="prev">← Câu trước</button><button id="next">Câu sau →</button></div>
+  </div>
+  <div class="card">
+    <div class="grid" id="grid"></div>
+    <div class="sub"><span class="note" style="margin:0">Bấm số để chuyển nhanh đến câu tương ứng. Ô tô xanh là câu đã trả lời.</span><button class="pri" id="submit">Nộp bài</button></div>
+  </div>
+</section>
+
+<section id="s3" class="card res hidden">
+  <h2 style="margin-top:0;font-size:20px">Kết quả trắc nghiệm</h2>
+  <table>
+    <tr><td>MSSV</td><td id="rM"></td></tr>
+    <tr><td>Họ và tên</td><td id="rT"></td></tr>
+    <tr><td>Điểm</td><td id="rD"></td></tr>
+    <tr><td>Số câu đúng</td><td id="rC"></td></tr>
+    <tr><td>Mã băm</td><td class="hash" id="rH"></td></tr>
+  </table>
+  <p class="note">Nộp thời điểm <span id="rTime"></span>. Chụp màn hình hoặc in trang này để nộp cho giảng viên. Mã băm gắn với MSSV, họ tên và điểm, sửa bất kỳ thông tin nào thì mã sẽ không còn khớp.</p>
+  <div class="noprint"><button id="print">In kết quả</button></div>
+</section>
+</div>
+
+<div class="modal hidden" id="mdl"><div class="card">
+  <p id="mTxt" style="margin-top:0"></p>
+  <div class="nav"><button id="mNo">Làm tiếp</button><button class="pri" id="mYes">Nộp bài</button></div>
+</div></div>
+
+<script>
+const QS = [["Nhiệm vụ chính của hệ thống cấp nước trong công trình là gì?", "Đưa nước từ mạng cấp nước ngoài nhà đến mọi thiết bị dùng nước trong công trình.", "Thu gom nước thải từ các thiết bị vệ sinh dẫn ra mạng thoát nước ngoài nhà.", "Xử lý nước thô thành nước sạch trước khi đưa vào mạng cấp nước đô thị.", "Chỉ cấp nước cho các thiết bị đặt ở những tầng thấp của công trình."], ["Bộ phận nào nối đường ống cấp nước bên ngoài với nút đồng hồ đo nước?", "Đường ống dẫn nước vào nhà.", "Đường ống đứng cấp nước.", "Đường ống nhánh cấp nước.", "Đường ống chính trong nhà."], ["Đường ống chính của hệ thống cấp nước trong nhà dẫn nước từ đâu đến đâu?", "Từ nút đồng hồ đo nước đến các đường ống đứng.", "Từ các ống đứng đến các dụng cụ vệ sinh.", "Từ ống cấp nước ngoài nhà đến nút đồng hồ đo nước.", "Từ trạm bơm đến két nước đặt trên mái."], ["Đường ống nhánh cấp nước dẫn nước từ đâu đến đâu?", "Từ các ống đứng đến các dụng cụ vệ sinh.", "Từ nút đồng hồ đến các ống đứng.", "Từ mạng cấp nước ngoài nhà đến bể chứa.", "Từ két nước mái đến trạm bơm."], ["Nút đồng hồ đo nước gồm những thành phần nào?", "Đồng hồ đo nước và các thiết bị khác dùng để đo lượng nước tiêu thụ.", "Máy bơm và bình điều áp dùng để tăng áp lực nước cho toàn công trình.", "Két nước và van phao dùng để dự trữ nước cho các giờ dùng nhiều.", "Van giảm áp và ống xả dùng để khử phần áp lực dư trong đường ống."], ["Áp lực cần thiết của công trình được hiểu là gì?", "Áp lực đủ để nước đến được mọi thiết bị, kể cả thiết bị cao nhất và xa nhất.", "Áp lực lớn nhất mà mạng cấp nước ngoài nhà có thể cung cấp.", "Áp lực nhỏ nhất còn lại ngay tại miệng vòi của thiết bị thấp nhất.", "Áp lực tối đa mà đường ống trong nhà có thể chịu được."], ["Công thức xác định áp lực cần thiết của công trình là công thức nào?", "Hct = Hnh + hdh + Σh + hcb + htd", "Hct = Hnh + hdh + Σh + hcb", "Hct = Hnh + Σh + htd", "Hct = hdh + Σh + hcb + htd"], ["Ký hiệu Hnh trong công thức áp lực cần thiết có ý nghĩa gì?", "Độ cao hình học đưa nước từ trục ống ngoài đến thiết bị bất lợi nhất.", "Tổn thất áp lực qua đồng hồ đo nước đặt tại nút đầu nhà, tính bằng mét.", "Tổng tổn thất áp lực do ma sát dọc theo tuyến ống bất lợi nhất trong nhà.", "Áp lực tự do cần thiết tại thiết bị dùng nước đặt ở vị trí cao nhất."], ["Ký hiệu hdh trong công thức áp lực cần thiết là gì?", "Tổn thất áp lực qua đồng hồ đo nước.", "Tổn thất áp lực cục bộ tại các phụ tùng.", "Độ cao hình học của thiết bị bất lợi nhất.", "Áp lực tự do tại thiết bị dùng nước."], ["Với hệ thống cấp nước sinh hoạt, tổn thất áp lực cục bộ hcb được lấy sơ bộ bằng bao nhiêu phần trăm Σh?", "Từ 20 đến 30 phần trăm.", "Khoảng 10 phần trăm.", "Từ 15 đến 20 phần trăm.", "Từ 40 đến 50 phần trăm."], ["Với hệ thống cấp nước chữa cháy, tổn thất cục bộ hcb được lấy sơ bộ bằng bao nhiêu phần trăm Σh?", "Khoảng 10 phần trăm khi chữa cháy.", "Từ 20 đến 30 phần trăm như sinh hoạt.", "Khoảng 5 phần trăm vì ít phụ tùng.", "Khoảng 50 phần trăm vì lưu lượng lớn."], ["Ký hiệu htd trong công thức áp lực cần thiết là gì?", "Áp lực tự do cần thiết tại thiết bị dùng nước.", "Tổn thất áp lực dọc đường ống trên tuyến bất lợi nhất.", "Tổn thất áp lực qua đồng hồ đo nước ở đầu nhà.", "Chênh cao hình học của tuyến ống từ mạng ngoài."], ["Áp lực cần thiết sơ bộ của nhà một tầng là bao nhiêu?", "Từ 8 đến 10 m.", "Từ 4 đến 6 m.", "Khoảng 12 m.", "Khoảng 16 m."], ["Áp lực cần thiết sơ bộ của nhà hai tầng là bao nhiêu?", "Khoảng 12 m.", "Khoảng 8 m.", "Khoảng 16 m.", "Khoảng 20 m."], ["Áp lực cần thiết sơ bộ của nhà ba tầng là bao nhiêu?", "Khoảng 16 m.", "Khoảng 12 m.", "Khoảng 20 m.", "Khoảng 24 m."], ["Từ tầng thứ ba trở lên, mỗi tầng nhà tăng thêm thì áp lực cần thiết sơ bộ tăng thêm khoảng bao nhiêu?", "Khoảng 4 m.", "Khoảng 2 m.", "Khoảng 3 m.", "Khoảng 6 m."], ["Theo chức năng, hệ thống cấp nước trong công trình được chia thành các loại nào?", "Sinh hoạt, sản xuất, chữa cháy và kết hợp.", "Cụt, vòng, phân vùng và kết hợp.", "Đơn giản, có két, có bơm và có bể.", "Nước lạnh, nước nóng, nước thải và nước mưa."], ["Đặc điểm nào đúng với hệ thống cấp nước đơn giản?", "Không dùng bơm, két nước hay bể chứa, nước tự chảy theo áp lực mạng ngoài.", "Có két nước trên mái để dự trữ và điều hòa lưu lượng.", "Có trạm bơm và bình điều áp nhỏ điều khiển bằng rơle áp lực.", "Có bể chứa đặt ở tầng hầm và bơm đưa nước lên két."], ["Điều kiện áp dụng của hệ thống cấp nước đơn giản là gì?", "Hmin lớn hơn Hct.", "Hmin nhỏ hơn Hct.", "Hmax nhỏ hơn Hct.", "Hct lớn hơn Hmax."], ["Điều kiện áp dụng của hệ thống cấp nước có két nước là gì?", "Hmin nhỏ hơn Hct và Hct nhỏ hơn Hmax.", "Hmin lớn hơn Hct và Hmax cũng lớn hơn Hct.", "Hct lớn hơn cả Hmin lẫn Hmax của mạng.", "Hmin bằng Hmax và cả hai đều lớn hơn Hct."], ["Trên đường ống dẫn nước từ đáy két xuống, van một chiều được đặt để làm gì?", "Chỉ cho nước đi xuống, không cho nước vào từ đáy két để khỏi xáo trộn cặn.", "Giảm áp lực nước khi đi từ két xuống các tầng dưới để bảo vệ thiết bị vệ sinh.", "Đo lượng nước cấp cho các tầng bên dưới để tính tiền nước theo từng tầng.", "Xả khí tích tụ ở điểm cao nhất của ống đứng để tránh hiện tượng tắc khí."], ["Ưu điểm của hệ thống cấp nước có két nước là gì?", "Đảm bảo an toàn, nước không bị mất đột ngột và tiết kiệm điện.", "Không ảnh hưởng đến kiến trúc và kết cấu của ngôi nhà.", "Không cần bố trí van một chiều trên đường ống.", "Chi phí xây dựng thấp hơn mọi sơ đồ khác."], ["Nhược điểm chính của hệ thống cấp nước có két nước là gì?", "Nếu dung tích két quá lớn sẽ ảnh hưởng đến kiến trúc và kết cấu ngôi nhà.", "Bơm phải đóng cắt liên tục nên rơle áp lực và động cơ bơm nhanh bị hỏng.", "Khi mạng ngoài mất nước thì nhà hoàn toàn không còn nước dự trữ để dùng.", "Bơm hút trực tiếp từ đường ống ngoài làm giảm áp lực của các hộ dùng khác."], ["Bình điều áp trong hệ thống có trạm bơm tự động thường có dung tích khoảng bao nhiêu?", "Từ 5 đến 20 lít.", "Từ 50 đến 100 lít.", "Từ 200 đến 500 lít.", "Từ 1 đến 2 mét khối."], ["Rơle áp lực trong hệ thống có trạm bơm và bình điều áp có nhiệm vụ gì?", "Ngắt bơm khi áp lực đạt giá trị cài đặt, cho bơm chạy lại khi áp lực giảm.", "Đo lượng nước tiêu thụ của công trình để ghi lại theo từng giờ trong ngày.", "Giữ mực nước trong két luôn ở mức cao nhất bằng cách đóng mở van phao.", "Ngăn nước chảy ngược từ két xuống mạng ngoài mỗi khi áp lực mạng giảm."], ["Hệ thống cấp nước có trạm bơm (bơm và bình điều áp) được dùng khi nào?", "Áp lực đường ống ngoài lớn hơn 6 m nhưng vẫn không đủ đưa nước tới thiết bị.", "Áp lực đường ống ngoài luôn lớn hơn áp lực cần thiết của nhà.", "Áp lực đường ống ngoài nhỏ hơn 6 m hoàn toàn.", "Công trình cần dự trữ nước chữa cháy lớn."], ["Trong hệ thống có trạm bơm và két nước, thiết bị nào điều khiển bơm chạy hoặc dừng?", "Rơle phao đặt trên két nước.", "Van giảm áp đặt trên ống đứng.", "Đồng hồ đo nước ở đầu nhà.", "Van một chiều đặt ở đáy két."], ["Hệ thống có trạm bơm và két nước được áp dụng trong trường hợp nào?", "Áp lực mạng ngoài không đảm bảo nhưng lớn hơn 6 m.", "Áp lực mạng ngoài luôn đảm bảo đưa nước tới mọi thiết bị.", "Áp lực mạng ngoài nhỏ hơn 6 m hoặc công trình rất quan trọng.", "Nhà chỉ có một tầng với ít thiết bị vệ sinh."], ["Hệ thống có két nước, trạm bơm và bể chứa được áp dụng khi nào?", "Áp lực mạng ngoài nhỏ hơn 6 m hoặc công trình quan trọng cần dự trữ nước.", "Áp lực mạng ngoài lớn hơn áp lực cần thiết nên nước lên tới két mái.", "Nhà thấp tầng, ít thiết bị vệ sinh, chi phí đầu tư bị hạn chế chặt chẽ.", "Áp lực mạng ngoài nằm giữa Hmin và Hmax và luôn đủ đưa nước lên mái."], ["Ưu điểm nổi bật của hệ thống có bể chứa, bơm và két nước là gì?", "Máy bơm hút nước từ bể nên không làm giảm áp lực ở đường ống bên ngoài.", "Sơ đồ đơn giản, chi phí xây dựng thấp nhất trong các sơ đồ cấp nước.", "Không tốn diện tích xây dựng bể chứa và két nước trong công trình.", "Không cần dùng điện năng để vận hành bơm trong suốt thời gian cấp nước."], ["Thùng khí ép của hệ thống trạm khí nén nhỏ thường có cấu tạo như thế nào?", "Nước ở phía dưới, khí nén ở phía trên, ngăn cách bằng màng cao su.", "Khí nén ở phía dưới, nước ở phía trên, không có màng ngăn.", "Hai ngăn nước đặt cạnh nhau, ngăn cách bằng tấm thép.", "Chỉ chứa khí, nước chảy ngoài thùng."], ["Ưu điểm của hệ thống dùng trạm khí nén là gì?", "Không cần bể chứa hay két mái nên không ảnh hưởng kết cấu và kiến trúc mái.", "Bơm hút từ bể chứa nên không làm ảnh hưởng đến mạng cấp nước bên ngoài.", "Không cần dùng máy bơm hay máy nén khí nên chi phí vận hành rất thấp.", "Dự trữ được lượng nước rất lớn phục vụ chữa cháy trong thời gian dài."], ["Nguyên tắc phân vùng thông thường là bao nhiêu tầng cho mỗi vùng cấp nước?", "Từ 4 đến 6 tầng, chiều cao hình học mỗi vùng khoảng 20 m.", "Từ 1 đến 2 tầng, chiều cao mỗi vùng khoảng 6 m.", "Từ 10 đến 12 tầng, chiều cao mỗi vùng khoảng 40 m.", "Toàn bộ nhà là một vùng duy nhất."], ["Trường hợp nào sau đây là lý do cần phân vùng cấp nước?", "Tận dụng áp lực đường ống bên ngoài, khử áp lực dư, tăng áp cho tầng mái.", "Giảm số lượng đồng hồ đo nước trong nhà để tiết kiệm chi phí lắp đặt.", "Tăng tổn thất áp lực trên đường ống nhằm giảm tiếng ồn khi dùng nước.", "Loại bỏ hoàn toàn việc dùng van một chiều trên các đường ống đứng chính."], ["Hệ thống có đường ống chính là mạng lưới cụt có đặc điểm nào?", "Là loại phổ biến nhất, áp dụng cho hầu hết các trường hợp.", "Chỉ dùng cho các nhà đặc biệt quan trọng.", "Ống chính khép kín thành vòng, nước đến theo hai hướng.", "Chỉ dùng cho nhà tắm công cộng."], ["Mạng lưới vòng thường được dùng cho loại công trình nào?", "Nhà đặc biệt, quan trọng, yêu cầu cấp nước liên tục và an toàn.", "Nhà ở một tầng có ít thiết bị vệ sinh và nhu cầu dùng nước nhỏ.", "Mọi công trình dân dụng thông thường có yêu cầu cấp nước bình thường.", "Chỉ các công trình không có bể chứa hay két nước dự trữ trên mái."], ["Đường ống chính đặt ở phía trên thường được dùng cho công trình nào?", "Nhà tắm công cộng và hệ thống phân vùng để tận dụng áp lực.", "Mọi nhà ở thấp tầng thông thường có áp lực mạng ngoài ổn định.", "Chỉ nhà máy không có tầng hầm và không có bể chứa nước ngầm.", "Chỉ các công trình dùng sơ đồ đơn giản có áp lực mạng ngoài lớn."], ["Áp lực tự do tối thiểu của vòi xịt vệ sinh xí là bao nhiêu?", "3 m.", "1 m.", "2 m.", "4 m."], ["Áp lực tự do tối thiểu của vòi tắm hoa sen là bao nhiêu?", "4 m.", "1 m.", "2 m.", "3 m."], ["Với nhà cao tầng, áp lực tự do thiết kế cho hoa sen để bảo đảm tiện nghi là bao nhiêu?", "Từ 10 đến 15 m.", "Từ 1 đến 2 m.", "Từ 3 đến 4 m.", "Từ 30 đến 40 m."], ["Trong công thức h = i·l, i là đại lượng nào?", "Tổn thất áp lực đơn vị cho một mét ống, tra từ bảng thủy lực.", "Tổng chiều dài của tuyến ống bất lợi nhất tính từ nút đồng hồ.", "Hệ số sức cản cục bộ của các phụ tùng lắp trên đoạn ống tính.", "Lưu lượng tính toán của đoạn ống, tra từ bảng lưu lượng thiết bị."], ["Áp lực tự do thường lấy cho dụng cụ vệ sinh thông thường là bao nhiêu?", "Khoảng 2 m, tối thiểu 1 m.", "Khoảng 0,5 m, tối thiểu 0,1 m.", "Khoảng 6 m, tối thiểu 4 m.", "Khoảng 15 m, tối thiểu 10 m."], ["Vì sao khi chọn sơ đồ phải dùng áp lực nhỏ nhất Hmin của mạng ngoài để so sánh với Hct?", "Để bảo đảm công trình vẫn đủ nước ngay cả lúc áp lực mạng ngoài xuống thấp nhất.", "Vì Hmin là áp lực xuất hiện thường xuyên nhất trong ngày nên đại diện tốt nhất.", "Vì Hmin dễ đo hơn Hmax bằng áp kế nên thuận tiện hơn cho người thiết kế.", "Vì quy định cấm dùng áp lực lớn nhất để thiết kế do dễ gây hỏng đường ống."], ["Vì sao hệ thống có két nước phù hợp khi Hmin nhỏ hơn Hct nhỏ hơn Hmax?", "Lúc áp lực mạng cao nước lên két để dự trữ, lúc áp lực thấp két cấp lại cho thiết bị.", "Vì lúc nào áp lực mạng cũng đủ đưa nước tới mọi thiết bị nên két chỉ để trang trí.", "Vì két nước làm tăng áp lực của mạng ngoài mỗi khi nước được đưa lên mái nhà.", "Vì két giúp bơm không phải làm việc mỗi khi mạng ngoài mất nước trong nhiều giờ."], ["Vì sao phải đặt van một chiều ở biên giới giữa hai vùng cấp nước?", "Để nước từ két hoặc bơm của vùng trên không chảy ngược xuống vùng dưới.", "Để giảm áp lực dư cho các tầng ở vùng dưới khi vùng trên dùng nước.", "Để đo lượng nước sử dụng riêng của từng vùng cấp nước trong nhà.", "Để xả khí tích tụ ở biên giới giữa hai vùng cấp nước liền kề."], ["Vì sao bình điều áp dung tích quá nhỏ làm bơm nhanh hỏng?", "Bơm và rơle phải đóng cắt liên tục nên mòn nhanh.", "Bình nhỏ làm áp lực trong ống tăng vượt mức cho phép.", "Bình nhỏ làm nước bị nóng lên khi bơm chạy.", "Bình nhỏ khiến bơm không bao giờ dừng chạy."], ["Vì sao bơm hút trực tiếp từ đường ống ngoài bị coi là nhược điểm?", "Làm giảm áp lực và ảnh hưởng đến các hộ dùng nước khác trên cùng mạng.", "Làm tăng áp lực mạng ngoài quá mức cho phép nên dễ gây vỡ ống cái.", "Làm nước trong ống ngoài bị đục và có cặn nên các hộ khác phải lọc.", "Làm đồng hồ đo nước ở các hộ khác chạy chậm lại và ghi sai số."], ["Vì sao hệ thống bể chứa, bơm và két nước an toàn cấp nước hơn sơ đồ đơn giản?", "Vì có nước dự trữ ở bể và két nên vẫn cấp được nước khi mạng ngoài yếu hoặc mất.", "Vì hệ thống này không cần đến điện năng để vận hành máy bơm và rơle điều khiển.", "Vì ống dẫn nước trong hệ thống này luôn có đường kính lớn hơn sơ đồ đơn giản.", "Vì áp lực mạng ngoài ở loại công trình này luôn cao hơn áp lực cần thiết."], ["Vì sao sơ đồ cấp nước đơn giản bị coi là không an toàn?", "Không có dự trữ nên khi áp lực mạng ngoài giảm hoặc mất nước thì nhà thiếu nước ngay.", "Vì sơ đồ này luôn làm áp lực trong nhà quá lớn nên thiết bị dễ hỏng và ồn.", "Vì sơ đồ này phải dùng quá nhiều máy bơm nên xác suất hỏng hóc rất cao.", "Vì sơ đồ này phải dùng vật liệu ống đắt tiền nên dễ bị cắt giảm khi thi công."], ["Vì sao ống dẫn nước ra khỏi két thường đặt cao hơn đáy két?", "Để tránh hút cặn lắng ở đáy két vào đường ống cấp nước.", "Để tăng áp lực nước ở đầu ống ra khỏi két xuống các tầng.", "Để giảm chiều dài tuyến ống dẫn nước xuống các tầng bên dưới.", "Để két luôn đầy nước và không bao giờ bị cạn khi dùng nhiều."], ["Vì sao nên bố trí ống cấp nước ở phía trên ống thoát nước?", "Nếu có rò rỉ thì nước bẩn không thể xâm nhập vào ống cấp nước.", "Để ống cấp nước không bị tổn thất áp lực khi đi qua các tầng.", "Để giảm chiều cao hình học Hnh của tuyến ống cấp nước trong nhà.", "Để thi công ống thoát nước thuận tiện hơn ở các vị trí giao chéo."], ["Vì sao miệng ống cấp vào bể chứa phải cao hơn mực nước tràn?", "Tạo khe hở không khí để nước trong bể không chảy ngược vào mạng cấp nước.", "Để tăng áp lực nước đổ vào bể nhờ chiều cao rơi tự do của dòng chảy.", "Để bể luôn đầy đến miệng ống và không bao giờ xảy ra hiện tượng tràn.", "Để giảm tiếng ồn khi nước chảy vào bể nhờ đầu ống được nhúng trong nước."], ["Vì sao nhà cao tầng cần phân vùng cấp nước?", "Để áp lực ở các tầng thấp không quá lớn, tránh hỏng thiết bị và gây ồn.", "Để giảm số lượng thiết bị vệ sinh phải lắp đặt trong ngôi nhà cao tầng.", "Để không phải dùng máy bơm cho bất kỳ tầng nào trong ngôi nhà cao tầng.", "Để tăng tổn thất áp lực trên đường ống nhằm tiết kiệm đường kính ống."], ["Vì sao mạng lưới vòng có độ tin cậy cấp nước cao hơn mạng cụt?", "Nước đến điểm dùng theo hai hướng nên khi một đoạn hỏng vẫn cô lập được và cấp tiếp.", "Vì mạng vòng có ít van và ít đoạn ống hơn mạng cụt nên xác suất hỏng thấp hơn.", "Vì mạng vòng luôn có áp lực lớn hơn mạng cụt nhờ nước chảy qua nhiều đoạn ống.", "Vì mạng vòng không cần bố trí ống đứng nên nước không bị tổn thất theo chiều cao."], ["Vì sao tổn thất hdh chỉ xác định được sau khi chọn đồng hồ đo nước?", "Vì hdh phụ thuộc sức cản của loại và cỡ đồng hồ được chọn.", "Vì hdh phụ thuộc số tầng của ngôi nhà.", "Vì hdh phụ thuộc áp lực lớn nhất của mạng ngoài.", "Vì hdh phụ thuộc chiều dài ống chính."], ["Điểm khác biệt chính giữa trạm khí nén và bơm có bình điều áp nhỏ là gì?", "Thùng khí ép lớn hơn nên khoảng thời gian giữa hai lần khởi động bơm dài hơn.", "Trạm khí nén không cần dùng máy bơm mà chỉ dùng máy nén khí để cấp nước.", "Trạm khí nén bắt buộc phải có thêm két nước đặt trên mái để điều hòa nước.", "Trạm khí nén chỉ dùng được khi áp lực mạng ngoài rất cao và ổn định."], ["Khi Hmax của mạng ngoài nhỏ hơn Hct thì kết luận nào đúng?", "Không thể đưa nước lên két bằng áp lực mạng, cần có máy bơm.", "Có thể dùng sơ đồ đơn giản mà không cần thêm két hay máy bơm.", "Chỉ cần đặt thêm một két nước ở tầng mái để dự trữ nước.", "Áp lực mạng ngoài đã thừa nên cần đặt van giảm áp cho nhà."], ["Vì sao không nên chọn két nước có dung tích quá lớn?", "Ảnh hưởng đến kiến trúc, tăng tải trọng lên kết cấu mái.", "Làm nước trong két có áp lực quá thấp so với thiết bị tầng trên.", "Làm máy bơm không thể hoạt động được khi mực nước trong két thấp.", "Làm van phao không đóng được khi két đã đầy nước đến mức tràn."], ["Vì sao phải đo áp lực mạng ngoài vào nhiều khung giờ và nhiều mùa?", "Vì áp lực mạng thay đổi theo giờ trong ngày và theo mùa.", "Vì áp kế chỉ hoạt động chính xác vào một số giờ nhất định.", "Vì cơ quan cấp nước bắt buộc đo ba lần mỗi ngày.", "Vì áp lực mạng ngoài luôn cố định nên cần lấy giá trị trung bình."], ["Vì sao công thức áp lực sơ bộ theo số tầng chỉ dùng để chọn phương án?", "Vì công thức chưa kể đến tuyến ống, đồng hồ và thiết bị cụ thể của công trình.", "Vì công thức luôn cho kết quả lớn hơn thực tế nhiều lần nên không dùng thiết kế.", "Vì công thức chỉ đúng cho nhà từ 20 tầng trở lên có hệ thống phân vùng.", "Vì công thức không có đơn vị mét cột nước nên không so sánh được với Hmin."], ["Vì sao nhà cao tầng thường tách riêng hệ thống chữa cháy khỏi sinh hoạt?", "Vì chữa cháy có yêu cầu riêng về lưu lượng, áp lực, dự trữ và độ tin cậy.", "Vì nước chữa cháy phải qua xử lý chất lượng cao hơn nhiều so với nước sinh hoạt.", "Vì nước sinh hoạt không thể chảy trong ống thép dùng cho hệ thống chữa cháy.", "Vì quy định cấm nhà cao tầng dùng chung máy bơm cho bất kỳ hệ thống nào."], ["Khi nào nước sản xuất cần làm hệ thống riêng, không gộp với sinh hoạt?", "Khi chất lượng cao hơn sinh hoạt, số lượng nhiều hoặc có yêu cầu đặc biệt.", "Khi chất lượng yêu cầu chỉ bằng nước sinh hoạt và số lượng dùng rất ít.", "Khi công trình chỉ có một tầng nên áp lực mạng ngoài luôn thừa.", "Khi mạng ngoài có áp lực lớn hơn 6 m và nước không cần dự trữ."], ["Đường vòng (bypass) ở nút đồng hồ đo nước có tác dụng gì?", "Cho phép sửa hoặc thay đồng hồ mà không phải ngắt nước của công trình.", "Tăng áp lực nước sau đồng hồ để cấp cho các tầng ở phía trên cao.", "Giảm sai số đo của đồng hồ khi lưu lượng nước chảy qua quá nhỏ.", "Ngăn nước chảy ngược ra mạng ngoài khi áp lực mạng đột ngột giảm."], ["Van giảm áp đặt ở các tầng dưới của nhà cao tầng nhằm mục đích gì?", "Giảm áp lực dư để bảo vệ thiết bị và giảm tiếng ồn.", "Tăng áp lực cho các tầng trên cùng của ngôi nhà cao tầng.", "Đo lưu lượng nước tiêu thụ của từng tầng trong ngôi nhà.", "Ngăn không cho nước chảy từ két xuống các tầng bên dưới."], ["Chọn đồng hồ đo nước cỡ quá nhỏ gây bất lợi gì?", "Tổn thất áp lực hdh tăng, các tầng cao dễ thiếu áp lực.", "Làm nước trong nhà bị đổi màu và có mùi do ứ đọng lâu.", "Làm áp lực mạng ngoài tăng lên nên phải đặt thêm van giảm áp.", "Làm giảm chiều cao hình học Hnh của tuyến ống bất lợi nhất."], ["Vì sao thành phần Hnh thường chiếm phần lớn áp lực cần thiết?", "Vì nước phải được nâng lên qua chiều cao của nhiều tầng nhà.", "Vì Hnh luôn được cộng thêm hệ số an toàn rất lớn khi tính.", "Vì Hnh bao gồm cả tổn thất áp lực qua đồng hồ đo nước.", "Vì Hnh chính là áp lực tự do của thiết bị đặt cao nhất."], ["Bơm tăng áp biến tần giữ áp lực ổn định bằng cách nào?", "Điều chỉnh tốc độ bơm theo tín hiệu áp lực đo được.", "Đóng mở van giảm áp sau bơm.", "Thay đổi cao độ của két nước mái.", "Tăng dung tích của bể chứa dưới tầng hầm."], ["Trong phân vùng nối tiếp, cách cấp nước cho vùng trên là gì?", "Bơm của vùng dưới đẩy nước lên két trung gian rồi bơm tiếp lên vùng trên.", "Mỗi vùng có bơm riêng hút trực tiếp từ bể chung.", "Toàn bộ nước lên két mái rồi giảm áp bằng van cho các vùng dưới.", "Vùng trên dùng trực tiếp áp lực của mạng ngoài."], ["Hng và Hnh khác nhau như thế nào?", "Hng là áp lực ống cấp nước ngoài, Hnh là chênh cao hình học đến thiết bị bất lợi.", "Hng là tổn thất áp lực qua đồng hồ, Hnh là tổn thất áp lực dọc đường ống.", "Hng là áp lực cần thiết của nhà, Hnh là áp lực tự do tại thiết bị.", "Hai ký hiệu này có ý nghĩa hoàn toàn giống nhau trong mọi công thức."], ["Vì sao khi tính áp lực phải chọn tuyến ống bất lợi nhất?", "Nếu đủ áp lực cho thiết bị bất lợi nhất thì các thiết bị còn lại cũng đủ.", "Vì tuyến bất lợi nhất là tuyến ngắn nhất nên tính toán được nhanh hơn.", "Vì tuyến bất lợi nhất có ít van và phụ tùng nên tính toán nhanh hơn.", "Vì chỉ cần tính một tuyến bất kỳ do mọi tuyến có tổn thất như nhau."], ["Vì sao ống PPR cần chú ý bù giãn nở và bố trí giá đỡ hợp lý?", "Vì ống nhựa PPR giãn nở nhiệt khá lớn khi nhiệt độ nước thay đổi.", "Vì ống PPR không chịu được áp lực nước nên phải chia nhỏ tuyến ống.", "Vì ống PPR bị gỉ sét nhanh nếu thường xuyên tiếp xúc với nước.", "Vì ống PPR không thể hàn nối nên phải dùng nhiều giá đỡ để giữ."], ["Vì sao phải thử áp lực đường ống trước khi che kín ống?", "Để phát hiện rò rỉ khi còn sửa chữa dễ dàng.", "Để làm sạch cặn bẩn còn sót lại bên trong lòng ống.", "Để tăng độ bền cho vật liệu ống khi chịu áp lực.", "Để đo lượng nước tiêu thụ ban đầu của cả công trình."], ["Van xả khí thường đặt ở vị trí nào và để làm gì?", "Ở điểm cao của tuyến ống để thoát khí tích tụ.", "Ở điểm thấp nhất của tuyến ống để xả cặn.", "Ở đầu ống dẫn vào nhà để đo lưu lượng.", "Ở đáy két nước để chặn nước chảy ngược."], ["Vì sao sơ đồ cấp nước đơn giản có chi phí đầu tư và vận hành thấp?", "Vì không cần bơm, két nước và bể chứa.", "Vì dùng ống có đường kính rất nhỏ.", "Vì dùng nước từ giếng khoan thay cho mạng ngoài.", "Vì hệ thống chỉ cấp nước cho tầng trệt."], ["Vì sao nhà cao tầng thiết kế áp lực tự do của hoa sen từ 10 đến 15 m?", "Để bảo đảm tiện nghi cho người sử dụng.", "Để giảm tổn thất qua đồng hồ đo nước.", "Để không phải phân vùng cấp nước.", "Để tiết kiệm nước tuyệt đối cho công trình."], ["Vì sao hệ thống chữa cháy cần bơm dự phòng và nguồn điện ưu tiên?", "Để hệ thống luôn sẵn sàng làm việc ngay cả khi một bơm hoặc nguồn điện gặp sự cố.", "Để giảm điện năng tiêu thụ hằng ngày của hệ thống chữa cháy trong công trình.", "Để nước chữa cháy đạt chất lượng nước uống theo quy chuẩn về nước sinh hoạt.", "Để tăng áp lực của mạng cấp nước ngoài mỗi khi hệ thống chữa cháy hoạt động."], ["Khi phân vùng, vì sao ống chính có thể đặt ở phía trên?", "Để cấp nước xuống cho vùng phía trên theo sơ đồ riêng có két và bơm.", "Để không phải dùng ống đứng khi cấp nước cho các tầng của công trình.", "Để nước tự chảy ngược từ tầng thấp lên tầng cao mà không cần bơm.", "Để giảm chiều dài của đường ống dẫn nước từ mạng ngoài vào nhà."], ["Vì sao phải kiểm tra hiệu lực của tiêu chuẩn và quy chuẩn trước khi thiết kế?", "Vì văn bản có thể đã được sửa đổi hoặc thay thế bởi bản mới.", "Vì tiêu chuẩn chỉ có hiệu lực trong một năm kể từ ngày ban hành.", "Vì mọi tiêu chuẩn đều tự động bị hủy bỏ sau mười năm áp dụng.", "Vì tiêu chuẩn cũ luôn sai so với thực tế nên phải bỏ hẳn đi."], ["Khi gộp hệ thống sinh hoạt và chữa cháy, điều gì cần lưu ý khi tính toán?", "Phải kiểm tra tổ hợp bất lợi khi vừa có cháy vừa có nhu cầu dùng nước sinh hoạt.", "Chỉ cần tính theo lưu lượng sinh hoạt vì lưu lượng chữa cháy chỉ dùng thoáng qua.", "Chỉ cần tính theo lưu lượng chữa cháy mà bỏ qua hoàn toàn nhu cầu sinh hoạt.", "Không cần tính lại đường kính ống vì ống sinh hoạt luôn đủ cho chữa cháy."], ["Vì sao bơm trong hệ thống có két nước thường bền hơn bơm chỉ có bình điều áp nhỏ?", "Vì két giúp bơm làm việc theo chu kỳ dài, ít đóng cắt hơn.", "Vì bơm trong hệ thống có két có công suất luôn lớn hơn.", "Vì bơm này không cần bôi trơn và làm mát.", "Vì bơm này luôn chạy liên tục suốt ngày."], ["Nhà 5 tầng có áp lực cần thiết sơ bộ là bao nhiêu?", "24 m.", "20 m.", "28 m.", "16 m."], ["Nhà 9 tầng có áp lực cần thiết sơ bộ là bao nhiêu?", "40 m.", "36 m.", "44 m.", "32 m."], ["Nhà 6 tầng, mạng ngoài có Hmin bằng 22 m và Hmax bằng 31 m. Nên chọn sơ đồ nào?", "Hệ thống có két nước.", "Hệ thống cấp nước đơn giản.", "Hệ thống chỉ có bơm và bình điều áp.", "Hệ thống có bể chứa, bơm và két nước."], ["Nhà 3 tầng, mạng ngoài có Hmin bằng 17 m. Nên chọn sơ đồ nào?", "Hệ thống cấp nước đơn giản.", "Hệ thống có két nước.", "Hệ thống có trạm khí nén.", "Hệ thống có bể chứa, bơm và két nước."], ["Nhà 9 tầng, mạng ngoài có Hmin bằng 5 m. Nên chọn sơ đồ nào?", "Hệ thống có bể chứa, bơm và két nước, nên xét thêm phân vùng.", "Hệ thống cấp nước đơn giản, nước tự chảy theo áp lực mạng ngoài.", "Hệ thống chỉ có một két nước trên mái, không cần bể chứa hay bơm.", "Hệ thống bơm hút trực tiếp từ mạng ngoài lên thẳng các tầng."], ["Cho Hnh bằng 15,0 m, hdh bằng 2,0 m, Σh bằng 3,2 m, hcb bằng 0,8 m, htd bằng 4,0 m. Áp lực cần thiết Hct bằng bao nhiêu?", "25,0 m.", "21,0 m.", "24,2 m.", "29,0 m."], ["Với Σh bằng 3,2 m và hệ thống sinh hoạt lấy hcb bằng 25 phần trăm Σh, hcb bằng bao nhiêu?", "0,8 m.", "0,32 m.", "0,96 m.", "3,2 m."], ["Nhà 7 tầng có Hmin bằng 21 m. Áp lực mạng đủ cấp trực tiếp cho tối đa mấy tầng dưới?", "4 tầng.", "3 tầng.", "5 tầng.", "7 tầng."], ["Nhà 12 tầng có áp lực cần thiết sơ bộ là bao nhiêu?", "52 m.", "48 m.", "56 m.", "44 m."], ["Nhà 12 tầng dùng 4 tầng dưới cấp trực tiếp từ mạng, 8 tầng trên chia đều mỗi vùng 4 tầng. Tổng số vùng cấp nước là bao nhiêu?", "3 vùng.", "2 vùng.", "4 vùng.", "12 vùng."], ["Áp lực cần thiết là 32 m cột nước. Đổi ra kPa được khoảng bao nhiêu?", "314 kPa.", "32 kPa.", "98 kPa.", "3140 kPa."], ["Áp kế ở mạng ngoài chỉ 2,5 bar. Đổi ra mét cột nước được khoảng bao nhiêu?", "25,5 m.", "2,5 m.", "0,25 m.", "255 m."], ["Đoạn ống đường kính 25 mm có A bằng 0,4367, lưu lượng q bằng 0,5 l/s. Tổn thất đơn vị i bằng bao nhiêu?", "Khoảng 0,109.", "Khoảng 0,218.", "Khoảng 1,747.", "Khoảng 0,055."], ["Đoạn ống có i bằng 0,109 và chiều dài 12 m. Tổn thất dọc đường h bằng bao nhiêu?", "Khoảng 1,31 m.", "Khoảng 0,13 m.", "Khoảng 13,1 m.", "Khoảng 0,109 m."], ["Bơm có lưu lượng 6 l/s, cột áp 30 m, hiệu suất 0,6. Công suất trục N khoảng bao nhiêu?", "Khoảng 2,94 kW.", "Khoảng 1,77 kW.", "Khoảng 17,7 kW.", "Khoảng 29,4 kW."], ["Bơm hút trực tiếp từ mạng ngoài, công trình cần Hct bằng 30 m, Hmin bằng 12 m. Cột áp bơm cần bằng bao nhiêu?", "18 m.", "42 m.", "30 m.", "12 m."], ["Nhà 2 tầng cần Hct bằng 12 m, mạng ngoài có Hmin bằng 15 m và Hmax bằng 45 m. Nên bổ sung thiết bị nào?", "Van giảm áp để hạn chế áp lực dư ở tầng thấp.", "Két nước mái để tăng áp lực cho tầng hai.", "Trạm bơm tăng áp để bù áp lực thiếu.", "Bể chứa dưới tầng hầm để dự trữ nước."], ["Σh cộng hcb bằng 1,5 m, hoa sen cần htd bằng 4 m. Mực nước thấp nhất trong két phải cao hơn hoa sen tầng cao nhất tối thiểu bao nhiêu?", "5,5 m.", "1,5 m.", "4,0 m.", "2,5 m."], ["Bệnh viện 8 tầng có mạng ngoài thường xuyên mất nước. Nên chọn sơ đồ nào?", "Bể chứa, bơm và két nước, bố trí bơm dự phòng.", "Sơ đồ cấp nước đơn giản.", "Chỉ dùng bơm hút trực tiếp từ mạng ngoài.", "Chỉ dùng bình điều áp nhỏ với rơle áp lực."], ["Chung cư 15 tầng có Hct sơ bộ bằng 60 m, mạng ngoài có Hmin bằng 20 m. Nên chọn phương án nào?", "Phân vùng cấp nước, bể chứa ở tầng hầm và bơm cho các vùng trên.", "Sơ đồ cấp nước đơn giản cho toàn nhà theo áp lực mạng ngoài.", "Một két nước duy nhất trên mái cấp cho toàn bộ các tầng nhà.", "Chỉ dùng bơm và bình điều áp nhỏ cấp cho toàn bộ các tầng."]];
+const SALT = "epu";
+const NPER = 40;
+const MINUTES = 40;
+const NQ = (NPER>0 && NPER<QS.length) ? NPER : QS.length;
+
+/* SHA-256 thuần JS, chạy được cả khi mở file trực tiếp */
+function sha256(str){
+  const b=new TextEncoder().encode(str);const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const l=b.length,n=((l+9+63)>>6)<<6,m=new Uint8Array(n);m.set(b);m[l]=0x80;const bits=l*8;
+  for(let i=0;i<4;i++)m[n-1-i]=(bits>>>(8*i))&255;m[n-5]=Math.floor(bits/2**32)&255;
+  const W=new Uint32Array(64),r=(x,k)=>(x>>>k)|(x<<(32-k));
+  for(let o=0;o<n;o+=64){
+    for(let i=0;i<16;i++)W[i]=(m[o+4*i]<<24)|(m[o+4*i+1]<<16)|(m[o+4*i+2]<<8)|m[o+4*i+3];
+    for(let i=16;i<64;i++){const s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0;}
+    let[a,bb,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+W[i])|0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    H=[H[0]+a,H[1]+bb,H[2]+c,H[3]+d,H[4]+e,H[5]+f,H[6]+g,H[7]+h].map(x=>x|0);
+  }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+const norm=s=>s.normalize("NFC").replace(/\s+/g," ").trim();
+function maBam(mssv,ten,diem){return sha256(SALT+"|"+norm(mssv).toUpperCase()+"|"+norm(ten).toUpperCase()+"|"+diem).slice(0,6).toUpperCase();}
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let exam=[],ans=[],cur=0,t0=0,tick=null,student={};
+$("nq").textContent=NQ;
+if(MINUTES>0)$("tl").textContent=", thời gian làm bài "+MINUTES+" phút, hết giờ bài được nộp tự động";
+const mmss=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+
+$("start").onclick=()=>{
+  const m=norm($("mssv").value),t=norm($("ten").value);
+  if(!m||!t){$("e1").textContent="Nhập đủ mã số sinh viên và họ tên trước khi bắt đầu.";return;}
+  student={m,t};
+  exam=shuffle(QS.map(q=>({q:q[0],o:shuffle([0,1,2,3].map(i=>({t:q[1+i],ok:i===0})))}))).slice(0,NQ);
+  ans=new Array(exam.length).fill(-1);
+  $("who").textContent=m+" · "+t;$("tot").textContent=exam.length;
+  const g=$("grid");g.innerHTML="";
+  exam.forEach((_,i)=>{const b=document.createElement("button");b.textContent=i+1;b.onclick=()=>go(i);g.appendChild(b);});
+  $("s1").classList.add("hidden");$("s2").classList.remove("hidden");
+  t0=Date.now();if(MINUTES>0){$("clkL").textContent="Còn lại";$("clk").textContent=mmss(MINUTES*60);}
+  tick=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);
+    if(MINUTES>0){const r=MINUTES*60-s;$("clk").textContent=mmss(Math.max(0,r));if(r<=0)nopBai();}
+    else $("clk").textContent=mmss(s);},1000);
+  window.onbeforeunload=()=>"Bài làm chưa nộp";
+  go(0);
+};
+
+function go(i){
+  cur=i;const q=exam[i];
+  $("qn").textContent="CÂU "+(i+1)+" / "+exam.length;$("qt").textContent=q.q;
+  const box=$("opts");box.innerHTML="";
+  q.o.forEach((o,k)=>{const b=document.createElement("button");b.className="opt"+(ans[i]===k?" sel":"");
+    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span><span></span>';b.lastChild.textContent=o.t;
+    b.onclick=()=>{ans[i]=k;refresh();go(i);};box.appendChild(b);});
+  $("prev").disabled=i===0;$("next").disabled=i===exam.length-1;refresh();
+}
+function refresh(){
+  const d=ans.filter(a=>a>=0).length;$("cnt").textContent=d;$("prog").style.width=(100*d/exam.length)+"%";
+  [...$("grid").children].forEach((b,i)=>{b.className=(ans[i]>=0?"done":"")+(i===cur?" cur":"");});
+}
+$("prev").onclick=()=>cur>0&&go(cur-1);
+$("next").onclick=()=>cur<exam.length-1&&go(cur+1);
+document.addEventListener("keydown",e=>{
+  if($("s2").classList.contains("hidden")||!$("mdl").classList.contains("hidden"))return;
+  const k=e.key.toUpperCase();
+  if("ABCD".includes(k)&&k.length===1){ans[cur]="ABCD".indexOf(k);go(cur);}
+  else if(e.key==="ArrowRight")$("next").click();else if(e.key==="ArrowLeft")$("prev").click();
+});
+
+$("submit").onclick=()=>{
+  const left=ans.filter(a=>a<0).length;
+  $("mTxt").textContent=left?("Còn "+left+" câu chưa trả lời, các câu này sẽ tính là sai. Nộp bài ngay?"):"Nộp bài và xem kết quả?";
+  $("mdl").classList.remove("hidden");
+};
+$("mNo").onclick=()=>$("mdl").classList.add("hidden");
+$("mYes").onclick=()=>nopBai();
+function nopBai(){
+  if(!exam.length)return;
+  $("mdl").classList.add("hidden");clearInterval(tick);window.onbeforeunload=null;
+  const c=exam.reduce((s,q,i)=>s+(ans[i]>=0&&q.o[ans[i]].ok?1:0),0);
+  const diem=(Math.round(c/exam.length*1000)/100).toFixed(2);
+  $("rM").textContent=student.m;$("rT").textContent=student.t;$("rD").textContent=diem+" / 10";
+  $("rC").textContent=c+" / "+exam.length;$("rH").textContent=maBam(student.m,student.t,diem);
+  $("rTime").textContent=new Date().toLocaleString("vi-VN");
+  $("s2").classList.add("hidden");$("s3").classList.remove("hidden");
+  exam=[];ans=[];
+}
+$("print").onclick=()=>window.print();
+</script>
+</body>
+</html>

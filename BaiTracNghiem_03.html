@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Cấp nước</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2430;--mute:#667085;--line:#dde2ea;--pri:#0b4f9c;--pri2:#e8f0fb;--ok:#1b7f4b;--warn:#b54708}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+header h1{font-size:20px;margin:0 0 2px}
+header p{margin:0;color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:16px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text]{width:100%;padding:10px 12px;font-size:16px;border:1px solid var(--line);border-radius:8px}
+input[type=text]:focus{outline:2px solid var(--pri);border-color:var(--pri)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:9px 16px}
+button.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+.err{color:#b42318;font-size:14px;min-height:20px;margin-top:6px}
+.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mute)}
+.top b{color:var(--ink)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pri);width:0}
+.qn{font-size:13px;color:var(--pri);font-weight:700;letter-spacing:.3px}
+.qt{font-size:18px;font-weight:600;margin:4px 0 14px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.opt:hover{border-color:var(--pri)}
+.opt.sel{border-color:var(--pri);background:var(--pri2)}
+.opt .k{flex:0 0 26px;height:26px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:#fff}
+.opt.sel .k{background:var(--pri);border-color:var(--pri);color:#fff}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.grid button{padding:6px 0;font-size:13px}
+.grid button.done{background:var(--pri2);border-color:#9dbbe6}
+.grid button.cur{outline:2px solid var(--pri)}
+.sub{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.res table{width:100%;border-collapse:collapse;font-size:17px}
+.res td{padding:12px 6px;border-bottom:1px solid var(--line)}
+.res td:first-child{color:var(--mute);width:40%}
+.res td:last-child{font-weight:700}
+.hash{font-family:Consolas,"Courier New",monospace;font-size:24px;letter-spacing:3px;color:var(--pri)}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(15,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-width:420px;width:100%}
+@media print{body{background:#fff}.noprint{display:none!important}.card{border:1px solid #999}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Trắc nghiệm Cấp thoát nước trong công trình</h1>
+  <p>Chương 02 Bài 3 · Khoa Cơ khí, Ô tô và Xây dựng · Trường Đại học Điện lực</p>
+</header>
+
+<section id="s1" class="card">
+  <p style="margin-top:0">Bài gồm <b id="nq"></b> câu, mỗi câu có một đáp án đúng<span id="tl"></span>. Câu hỏi và phương án được xáo trộn riêng cho từng lượt làm. Điểm tính theo thang 10.</p>
+  <label for="mssv">Mã số sinh viên</label>
+  <input id="mssv" type="text" autocomplete="off" placeholder="Ví dụ 2081110123">
+  <label for="ten">Họ và tên</label>
+  <input id="ten" type="text" autocomplete="off" placeholder="Ví dụ Nguyễn Văn An">
+  <div class="err" id="e1"></div>
+  <button class="pri" id="start">Bắt đầu làm bài</button>
+</section>
+
+<section id="s2" class="hidden">
+  <div class="card">
+    <div class="top"><span><b id="who"></b></span><span>Đã trả lời <b id="cnt">0</b>/<b id="tot"></b> · <span id="clkL">Thời gian</span> <b id="clk">00:00</b></span></div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+  <div class="card">
+    <div class="qn" id="qn"></div>
+    <div class="qt" id="qt"></div>
+    <div id="opts"></div>
+    <div class="nav"><button id="prev">← Câu trước</button><button id="next">Câu sau →</button></div>
+  </div>
+  <div class="card">
+    <div class="grid" id="grid"></div>
+    <div class="sub"><span class="note" style="margin:0">Bấm số để chuyển nhanh đến câu tương ứng. Ô tô xanh là câu đã trả lời.</span><button class="pri" id="submit">Nộp bài</button></div>
+  </div>
+</section>
+
+<section id="s3" class="card res hidden">
+  <h2 style="margin-top:0;font-size:20px">Kết quả trắc nghiệm</h2>
+  <table>
+    <tr><td>MSSV</td><td id="rM"></td></tr>
+    <tr><td>Họ và tên</td><td id="rT"></td></tr>
+    <tr><td>Điểm</td><td id="rD"></td></tr>
+    <tr><td>Số câu đúng</td><td id="rC"></td></tr>
+    <tr><td>Mã băm</td><td class="hash" id="rH"></td></tr>
+  </table>
+  <p class="note">Nộp thời điểm <span id="rTime"></span>. Chụp màn hình hoặc in trang này để nộp cho giảng viên. Mã băm gắn với MSSV, họ tên và điểm, sửa bất kỳ thông tin nào thì mã sẽ không còn khớp.</p>
+  <div class="noprint"><button id="print">In kết quả</button></div>
+</section>
+</div>
+
+<div class="modal hidden" id="mdl"><div class="card">
+  <p id="mTxt" style="margin-top:0"></p>
+  <div class="nav"><button id="mNo">Làm tiếp</button><button class="pri" id="mYes">Nộp bài</button></div>
+</div></div>
+
+<script>
+const QS = [["Một đương lượng đơn vị tương ứng với lưu lượng bao nhiêu?", "0,2 l/s", "0,1 l/s", "0,33 l/s", "1,0 l/s"], ["Đương lượng đơn vị được định nghĩa theo vòi nước của thiết bị nào?", "Vòi chậu rửa 15 mm, áp lực tự do 2 m", "Vòi sen 15 mm, áp lực tự do 3 m", "Vòi xả hố xí 25 mm, áp lực tự do 2 m", "Vòi tưới 20 mm, áp lực tự do 5 m"], ["Vận tốc kinh tế trong mạng lưới cấp nước trong nhà theo bài giảng thường lấy trong khoảng nào?", "0,5 đến 1,5 m/s", "1,5 đến 2,5 m/s", "0,1 đến 0,5 m/s", "2,0 đến 3,0 m/s"], ["Tổn thất áp lực cục bộ trong mạng lưới cấp nước trong nhà lấy sơ bộ bằng bao nhiêu so với tổn thất dọc đường?", "20 đến 30%", "5 đến 10%", "40 đến 50%", "60 đến 80%"], ["Ống nhánh dẫn nước tới thiết bị vệ sinh thường đặt với độ dốc bao nhiêu?", "0,002 đến 0,005", "0,02 đến 0,05", "0,0002 đến 0,0005", "0,01 đến 0,02"], ["Mỗi ống nhánh không nên phục vụ quá bao nhiêu đơn vị dùng nước?", "5 đơn vị", "3 đơn vị", "10 đơn vị", "20 đơn vị"], ["Chiều dài một ống nhánh cấp nước không nên vượt quá bao nhiêu?", "5 m", "2 m", "10 m", "15 m"], ["Tiêu chuẩn thiết kế cấp nước bên trong nhà dùng làm cơ sở tính toán trong bài là văn bản nào?", "TCVN 4513:1988", "TCVN 4474:1987", "TCVN 2622:1995", "TCVN 5576:1991"], ["Văn bản nào thay thế TCXDVN 33:2006 về mạng lưới đường ống và công trình cấp nước?", "TCVN 13606:2023", "TCVN 4513:1988", "QCVN 04:2021/BXD", "TCVN 3890:2023"], ["Quy chuẩn bắt buộc hiện hành về an toàn cháy cho nhà và công trình là văn bản nào?", "QCVN 06:2022/BXD và Sửa đổi 1:2023", "QCVN 04:2021/BXD về nhà chung cư", "QCVN 07:2023/BXD về hạ tầng kỹ thuật", "QCVN 01-1:2024/BYT về nước sạch"], ["Quy chuẩn hiện hành về chất lượng nước sạch dùng cho mục đích sinh hoạt là văn bản nào?", "QCVN 01-1:2024/BYT", "QCVN 01-1:2018/BYT", "QCVN 06:2022/BXD", "TCVN 13606:2023"], ["Hệ số a trong công thức lưu lượng cho nhà ở phụ thuộc vào yếu tố nào?", "Tiêu chuẩn dùng nước mỗi người mỗi ngày", "Tổng số đương lượng của ngôi nhà", "Chức năng của công trình công cộng", "Số lượng thiết bị vệ sinh cùng loại"], ["Hệ số K trong công thức lưu lượng cho nhà ở phụ thuộc vào yếu tố nào?", "Tổng số đương lượng N", "Tiêu chuẩn dùng nước mỗi người", "Số tầng của ngôi nhà", "Vật liệu của đường ống"], ["Theo bảng 2.5, khi tổng số đương lượng N đến 300 thì K bằng bao nhiêu?", "0,002", "0,003", "0,005", "0,02"], ["Theo bảng 2.4, tiêu chuẩn dùng nước 100 l/người.ngđ ứng với trị số a bằng bao nhiêu?", "2,2", "2,15", "2,0", "1,85"], ["Theo bảng 2.6, hệ số α của khách sạn, ký túc xá, nhà ở tập thể bằng bao nhiêu?", "2,5", "2,0", "1,5", "1,2"], ["Theo bảng 2.6, hệ số α của trường học và cơ quan giáo dục bằng bao nhiêu?", "1,8", "1,4", "2,5", "1,2"], ["Số đương lượng của một vòi tắm hương sen đặt trong căn hộ là bao nhiêu?", "0,67", "0,33", "1,0", "0,17"], ["Theo bảng 2.3, lưu lượng của vòi nước ở chậu rửa mặt là bao nhiêu?", "0,07 l/s", "0,2 l/s", "0,035 l/s", "0,14 l/s"], ["Công thức xác định lưu lượng tính toán cho công trình công cộng là công thức nào?", "q = 0,2·α·√N", "q = 0,2·ᵃ√N + K·N", "q = Σ q0·n·β", "q = 0,2·α·N"], ["Vận tốc nước trong ống hút của máy bơm theo bài giảng là bao nhiêu?", "1 đến 1,2 m/s", "1,5 đến 2 m/s", "0,3 đến 0,5 m/s", "2,5 đến 3 m/s"], ["Vận tốc nước trong ống đẩy của máy bơm theo bài giảng là bao nhiêu?", "1,5 đến 2 m/s", "1 đến 1,2 m/s", "0,5 đến 0,8 m/s", "3 đến 4 m/s"], ["Khi máy bơm hút trực tiếp từ đường ống cấp nước bên ngoài thì áp lực toàn phần của bơm tính theo công thức nào?", "Hb = Hct − Hng min", "Hb = Hct + Hng min", "Hb = Hct + Hhút", "Hb = Hng min − Hct"], ["Két nước dự trữ nước chữa cháy trong nhà cho khoảng thời gian nào?", "5 đến 10 phút đầu", "30 đến 60 phút đầu", "1 đến 2 giờ đầu", "3 giờ liền"], ["Theo bài gốc, bể chứa dự trữ nước chữa cháy cho khoảng thời gian bao lâu?", "3 giờ", "10 phút", "30 phút", "24 giờ"], ["Ống tràn của két nước thường đặt cao hơn mực nước trong két bao nhiêu?", "50 mm", "100 mm", "200 mm", "10 mm"], ["Ống xả cặn của két nước có đường kính bao nhiêu?", "40 đến 50 mm", "15 đến 20 mm", "80 đến 100 mm", "150 đến 200 mm"], ["Ống dẫn nước ra khỏi két thường đặt cách đáy két bao nhiêu?", "100 mm", "10 mm", "300 mm", "500 mm"], ["Hệ số dự trữ K khi tính dung tích két nước và bể chứa lấy bằng bao nhiêu?", "1,2 đến 1,3", "1,5 đến 2,0", "0,8 đến 0,9", "2,0 đến 3,0"], ["Dung tích một két nước không nên lớn quá bao nhiêu?", "20 đến 25 m³", "5 đến 10 m³", "50 đến 60 m³", "100 đến 120 m³"], ["Khi tính dung tích điều hòa của két theo chế độ bơm, số lần mở máy bơm trong một giờ lấy bao nhiêu?", "2 đến 4 lần", "6 đến 10 lần", "Đúng 1 lần", "12 đến 15 lần"], ["Tỷ số Pmin/Pmax của trạm khí ép thường lấy trong khoảng nào?", "0,6 đến 0,75", "0,2 đến 0,4", "0,85 đến 0,95", "1,0 đến 1,2"], ["Áp lực Pmax của trạm khí ép thường được giới hạn như thế nào?", "Nhỏ hơn 6 at", "Nhỏ hơn 2 at", "Lớn hơn 10 at", "Bằng đúng 1 at"], ["Máy nén khí bổ sung khí hao hụt cho trạm khí ép với chu kỳ khoảng bao lâu?", "1 đến 2 tuần một lần", "1 đến 2 giờ một lần", "Mỗi ngày một lần", "1 đến 2 năm một lần"], ["Loại máy bơm phổ biến nhất trong hệ thống cấp nước trong nhà là loại nào?", "Bơm ly tâm trục ngang chạy điện", "Bơm piston vận hành bằng tay", "Bơm hướng trục đặt trục đứng", "Bơm màng chạy bằng khí nén"], ["Khoảng cách tối thiểu giữa hai bệ máy bơm hoặc từ bệ tới tường là bao nhiêu?", "700 mm", "300 mm", "1500 mm", "2000 mm"], ["Theo quy ước màu sơn trong bài, đường ống cấp nước nóng sơn màu gì?", "Màu đỏ", "Màu xanh", "Màu đen", "Màu vàng"], ["Rơle tia thường được dùng vào mục đích nào?", "Khởi động máy bơm chữa cháy", "Báo cạn nước trong bể chứa", "Đo lưu lượng nước thải", "Điều chỉnh mực nước két"], ["Theo bài giảng, mỗi trạm bơm tối thiểu phải có thiết bị nào?", "Một máy bơm dự phòng", "Hai máy bơm chữa cháy", "Một trạm khí ép", "Một két nước trên mái"], ["Giới hạn áp lực làm việc của thiết bị vệ sinh dùng để xét phân vùng trong bài (tham khảo) là bao nhiêu?", "60 m", "30 m", "100 m", "10 m"], ["Vì sao lưu lượng tính toán không lấy bằng tổng lưu lượng của mọi thiết bị trong nhà?", "Các thiết bị không dùng nước đồng thời", "Ống nhỏ không chuyển được lưu lượng lớn", "Áp lực ngoài luôn thiếu vào giờ cao điểm", "Tiêu chuẩn cho phép giảm đi một nửa"], ["Tuyến tính toán bất lợi nhất được chọn là tuyến nào?", "Từ điểm đấu nối đến thiết bị cao nhất và xa nhất", "Từ điểm đấu nối đến thiết bị gần nhất ở tầng 1", "Tuyến có nhiều thiết bị vệ sinh nhất trong nhà", "Tuyến có đường kính ống nhỏ nhất trong mạng"], ["Khi số thiết bị vệ sinh trên một đoạn ống tăng lên thì hệ số hoạt động đồng thời thay đổi thế nào?", "Giảm xuống", "Tăng lên", "Không thay đổi", "Tăng rồi giảm"], ["Vì sao nhà công cộng có hệ số hoạt động đồng thời cao hơn nhà ở?", "Nhiều người dùng thiết bị cùng một lúc", "Thiết bị có ống nối đường kính lớn hơn", "Áp lực bên ngoài ở khu công cộng thấp hơn", "Tiêu chuẩn dùng nước mỗi người thấp hơn"], ["Khi tiêu chuẩn dùng nước mỗi người tăng thì trị số a và lưu lượng q thay đổi thế nào?", "a giảm, q tăng", "a tăng, q tăng", "a giảm, q giảm", "a tăng, q giảm"], ["Tính q cho một tầng rồi nhân với số tầng là sai vì lý do nào?", "Bỏ qua việc hệ số đồng thời giảm khi N tăng", "Bỏ qua tổn thất áp lực trên ống đứng", "Bỏ qua áp lực tự do cần có ở thiết bị", "Bỏ qua lưu lượng nước dùng cho chữa cháy"], ["Khi đường ống chính đặt phía trên, chọn vận tốc ống đứng lớn hơn vận tốc kinh tế nhằm mục đích gì?", "Tăng tổn thất để khử áp lực dư tầng dưới", "Giảm tổn thất để tầng dưới đủ nước hơn", "Tăng áp lực cho các tầng trên cùng", "Giảm tiếng ồn trong các ống đứng"], ["Ở hệ thống dùng két nước đặt trên mái, các tầng nào thường thiếu áp lực?", "Các tầng trên cùng sát mái", "Các tầng dưới cùng gần bể", "Các tầng ở giữa ngôi nhà", "Tầng hầm có trạm bơm"], ["Vì sao vòi nước ở tầng dưới thường chảy mạnh hơn vòi cùng loại ở tầng trên?", "Áp lực tự do ở tầng dưới lớn hơn", "Ống nhánh ở tầng dưới dài hơn", "Hệ số đồng thời tầng dưới lớn hơn", "Vòi tầng dưới có đường kính lớn hơn"], ["Vì sao nhà cao tầng phải phân vùng cấp nước?", "Áp lực tĩnh tầng dưới vượt giới hạn làm việc", "Lưu lượng tầng trên vượt lưu lượng của bơm", "Két nước mái không chứa đủ nước sinh hoạt", "Đồng hồ không đo được lưu lượng quá lớn"], ["Chọn vận tốc quá lớn trong ống cấp nước sẽ gây ra hậu quả nào?", "Tổn thất lớn, ồn, dễ gây búa nước", "Ống lớn, tốn kém, nước đọng lâu", "Áp lực tầng trên tăng quá mức", "Lưu lượng tính toán giảm đi nhiều"], ["Chọn vận tốc quá nhỏ trong ống cấp nước sẽ gây ra hậu quả nào?", "Đường kính lớn, tốn kém vật tư", "Tổn thất áp lực tăng rất nhanh", "Dễ xảy ra búa nước khi đóng vòi", "Bơm phải có cột áp lớn hơn nhiều"], ["Khi áp lực cần thiết Hct nhỏ hơn hoặc bằng áp lực bên ngoài Hng thì chọn sơ đồ nào?", "Cấp nước trực tiếp, không cần tăng áp", "Bắt buộc có máy bơm tăng áp", "Bắt buộc xây két nước trên mái", "Phải lắp trạm khí ép ở tầng hầm"], ["Vì sao khi bơm hút từ bể chứa thì cột áp bơm bằng Hct cộng chiều cao hút?", "Nước phải được nâng từ mực nước bể lên", "Để bù tổn thất trong két nước trên mái", "Để bù áp lực ngoài bị mất khi hút nước", "Để dự phòng thêm lưu lượng chữa cháy"], ["Khởi động bơm ly tâm khi van trên ống đẩy đang đóng nhằm mục đích gì?", "Giảm tải khi khởi động động cơ", "Tăng lưu lượng ngay khi khởi động", "Xả hết khí trong ống đẩy ra ngoài", "Kiểm tra độ kín của ống hút"], ["Van một chiều trên ống đẩy của máy bơm có tác dụng gì?", "Ngăn nước chảy ngược khi bơm dừng", "Điều chỉnh lưu lượng bơm theo giờ", "Giảm áp lực dư cho các tầng dưới", "Xả cặn lắng trong đường ống đẩy"], ["Điểm làm việc của máy bơm được xác định như thế nào?", "Giao của đặc tính bơm và đặc tính mạng", "Điểm có hiệu suất của bơm bằng không", "Điểm có cột áp lớn nhất của bơm", "Điểm có lưu lượng lớn nhất của bơm"], ["Đóng bớt van trên ống đẩy thì điểm làm việc của bơm dịch chuyển thế nào?", "Sang trái, Q giảm và H tăng", "Sang phải, Q tăng và H giảm", "Sang trái, Q giảm và H giảm", "Sang phải, Q tăng và H tăng"], ["Hiện tượng xâm thực ở máy bơm thường do nguyên nhân nào?", "Chiều cao hút lớn, vận tốc hút lớn", "Ống đẩy quá dài, vận tốc đẩy nhỏ", "Két nước mái quá nhỏ so với bơm", "Rơle áp lực đặt ngưỡng quá cao"], ["Máy bơm đóng ngắt liên tục thường do nguyên nhân nào?", "Két nhỏ hoặc bình áp bị mất khí", "Ống hút bị lọt khí vào bên trong", "Động cơ bị mất một pha điện", "Van đáy bị kẹt ở vị trí đóng"], ["Hiện tượng búa nước khi dừng bơm được giảm bằng biện pháp nào?", "Van một chiều đóng êm, bình giảm va", "Tăng đường kính ống hút của bơm", "Tăng số lần mở máy trong một giờ", "Hạ thấp cao độ đặt máy bơm"], ["Nếu hai phao của rơle phao buộc quá gần nhau thì điều gì xảy ra?", "Bơm đóng ngắt liên tục", "Bơm chạy mãi không dừng", "Két luôn bị tràn nước", "Rơle không đóng điện được"], ["Vì sao ống tràn của két nước phải được nối với ống thoát nước?", "Tránh nước chảy lênh láng trên mái", "Bổ sung nước cho hệ thống thoát", "Tăng áp lực trong két nước", "Xả cặn lắng dưới đáy két"], ["Khi két dự trữ nước chữa cháy, ống lấy nước sinh hoạt phải bố trí thế nào?", "Chỉ lấy phần nước sinh hoạt phía trên", "Đặt sát đáy két để lấy hết nước", "Nối chung với ống tràn của két", "Lắp van phao tự đóng khi có cháy"], ["Trạm khí ép được dùng thay cho két nước trong trường hợp nào?", "Dung tích hoặc độ cao két yêu cầu quá lớn", "Áp lực đường ống bên ngoài luôn luôn đủ", "Ngôi nhà chỉ có một đến hai tầng", "Không có nguồn điện để chạy máy bơm"], ["Trong công thức Boyle Mariotte của trạm khí ép, cộng thêm 1 vào áp lực P nhằm mục đích gì?", "Đổi áp lực dư sang áp lực tuyệt đối", "Kể đến tổn thất trong đường ống", "Kể đến hệ số dự trữ của thùng", "Đổi đơn vị m cột nước sang at"], ["Nếu chọn Pmax quá nhỏ cho trạm khí ép thì hậu quả là gì?", "Thùng không khí phải rất lớn", "Thùng dễ bị vỡ do áp lực", "Áp lực tầng trên không đủ", "Máy nén phải chạy liên tục"], ["Vì sao trạm khí ép áp lực cố định không kinh tế?", "Máy nén khí phải chạy liên tục", "Thùng nước phải làm rất lớn", "Không đặt được ở tầng hầm", "Không dùng được rơle áp lực"], ["Ưu điểm chính của két nước mái so với bơm tăng áp biến tần là gì?", "Vẫn cấp nước một thời gian khi mất điện", "Áp lực tại thiết bị luôn luôn ổn định", "Không tạo thêm tải trọng lên kết cấu mái", "Không phải thau rửa và bảo dưỡng định kỳ"], ["Nên tách riêng bể nước sinh hoạt và bể nước chữa cháy nhằm mục đích gì?", "Bảo đảm luôn đủ nước chữa cháy", "Giảm chi phí xây dựng bể chứa", "Tăng áp lực cho bơm sinh hoạt", "Giảm số máy bơm trong trạm bơm"], ["Khi dùng chung bể chứa, ống hút của bơm chữa cháy đặt ở cao độ nào?", "Thấp hơn ống hút bơm sinh hoạt", "Cao hơn ống hút bơm sinh hoạt", "Ngang cao độ ống tràn của bể", "Ngang cao độ ống nước vào bể"], ["Rơle báo cạn đặt trong bể chứa có tác dụng gì?", "Ngắt bơm để tránh bơm chạy khô", "Mở van phao cấp nước vào bể", "Báo động khi bể bị tràn nước", "Khởi động bơm chữa cháy dự phòng"], ["Vì sao ống PPR phù hợp làm ống nhánh cấp nước nóng?", "Hàn nhiệt kín khít và chịu được nhiệt", "Giá rẻ nhất và nối bằng keo rất nhanh", "Bền cơ học nhất, chịu va đập rất tốt", "Không giãn nở khi nhiệt độ thay đổi"], ["Vì sao không dùng ống uPVC để dẫn nước nóng?", "Không chịu được nhiệt độ cao", "Giá thành quá cao so với PPR", "Bị gỉ bên trong rất nhanh", "Quá nặng nên khó thi công"], ["Hiện tượng đọng sương trên ống nước lạnh được xử lý bằng cách nào?", "Bọc cách nhiệt cho ống", "Tăng vận tốc trong ống", "Sơn ống bằng màu xanh", "Lắp thêm van xả khí"], ["Van xả khí trên mạng lưới cấp nước trong nhà nên đặt ở vị trí nào?", "Điểm cao của tuyến ống", "Điểm thấp nhất của tuyến", "Ngay sau đồng hồ đo nước", "Trên ống hút của máy bơm"], ["Trong Ví dụ 1, đoạn ống đứng có tổn thất dọc đường lớn nhất vì lý do nào?", "Vận tốc cao và chiều dài lớn", "Lưu lượng lớn nhất toàn tuyến", "Đường kính lớn nhất toàn tuyến", "Có nhiều thiết bị nối vào nhất"], ["Công trình nào tính lưu lượng theo công thức q = Σ q0·n·β?", "Công trình thể dục thể thao", "Nhà chung cư nhiều căn hộ", "Khách sạn và ký túc xá", "Trường học và bệnh viện"], ["Vì sao phải thử áp lực đường ống trước khi đóng trần, bịt hộp kỹ thuật?", "Phát hiện rò rỉ khi còn dễ sửa chữa", "Tăng độ bền của mối hàn về sau", "Xả hết khí còn trong đường ống", "Kiểm tra lưu lượng tại các vòi"], ["Trong Ví dụ 4, đáy két phải cao hơn mái 3,2 m. Giải pháp hợp lý hơn là gì?", "Đặt két sát mái, bơm tăng áp cho tầng trên cùng", "Đặt két trong lồng cầu thang ở giữa nhà", "Tăng đường kính ống nhánh ở các tầng dưới", "Lắp rông đen giảm áp cho tầng trên cùng"], ["Nhà ở 48 căn, mỗi căn N = 2,5, tiêu chuẩn 100 l/người.ngđ nên a = 2,2 và K = 0,002. Lưu lượng tính toán q bằng bao nhiêu?", "2,00 l/s", "1,76 l/s", "5,06 l/s", "24,5 l/s"], ["Nhà ở 60 căn, mỗi căn N = 2,5, a = 2,2, K = 0,002. Lưu lượng tính toán q bằng bao nhiêu?", "2,25 l/s", "1,95 l/s", "2,55 l/s", "5,69 l/s"], ["Ký túc xá có tổng N = 120, α = 2,5. Lưu lượng tính toán q bằng bao nhiêu?", "5,48 l/s", "10,95 l/s", "2,19 l/s", "3,07 l/s"], ["Bệnh viện đa khoa có N = 37, α = 1,4. Lưu lượng tính toán q bằng bao nhiêu?", "1,70 l/s", "2,43 l/s", "8,52 l/s", "10,36 l/s"], ["Cung thể thao có 10 vòi sen (0,2 l/s, β = 1), 10 xí thùng rửa (0,1 l/s, β = 0,7), 10 tiểu treo (0,035 l/s, β = 1), 3 chậu rửa mặt (0,07 l/s, β = 0,8). q bằng bao nhiêu?", "3,22 l/s", "3,56 l/s", "2,87 l/s", "321,8 l/s"], ["Đoạn ống có q = 2,0 l/s, chọn v = 1,0 m/s. Đường kính tính toán bằng bao nhiêu?", "50 mm", "25 mm", "89 mm", "71 mm"], ["Ống có đường kính trong 40 mm chuyển lưu lượng 1,33 l/s. Vận tốc trong ống bằng bao nhiêu?", "1,06 m/s", "0,26 m/s", "3,33 m/s", "0,011 m/s"], ["Tổng tổn thất dọc đường trên tuyến bất lợi là 3,13 m, tổn thất cục bộ lấy 30%. Tổng tổn thất Σh bằng bao nhiêu?", "4,07 m", "0,94 m", "3,43 m", "6,26 m"], ["Cho hhh = 15,7 m, htd = 3,0 m, Σh = 4,07 m. Áp lực cần thiết Hct bằng bao nhiêu?", "22,8 m", "18,7 m", "19,8 m", "25,8 m"], ["Hct = 22,8 m, Hng min = 10 m, bơm hút trực tiếp từ ống ngoài. Cột áp bơm Hb bằng bao nhiêu?", "12,8 m", "32,8 m", "22,8 m", "2,28 m"], ["Hct = 22,8 m, bơm hút từ bể với chiều cao hút 3,0 m. Cột áp bơm Hb bằng bao nhiêu?", "25,8 m", "19,8 m", "12,8 m", "22,8 m"], ["Lưu lượng bơm 1,33 l/s đổi ra đơn vị m³/h bằng bao nhiêu?", "4,8 m³/h", "0,37 m³/h", "79,8 m³/h", "1,33 m³/h"], ["Bơm có Qb = 4,8 m³/h, mở 2 lần mỗi giờ. Dung tích điều hòa của két Wdh bằng bao nhiêu?", "1,2 m³", "2,4 m³", "0,6 m³", "19,2 m³"], ["Két dự trữ nước chữa cháy 10 phút cho 1 vòi phun 2,5 l/s. Dung tích nước chữa cháy Wcc bằng bao nhiêu?", "1,5 m³", "0,025 m³", "15 m³", "9 m³"], ["Wdh = 1,2 m³, Wcc = 1,5 m³, K = 1,2. Dung tích toàn phần của két Wk bằng bao nhiêu?", "3,24 m³", "2,70 m³", "2,94 m³", "1,44 m³"], ["Bể chứa có Wsh = 12 m³, Wcc = 27 m³, K = 1,2. Dung tích toàn phần của bể bằng bao nhiêu?", "46,8 m³", "39,0 m³", "41,4 m³", "44,4 m³"], ["Nước chữa cháy dự trữ trong bể cho 3 giờ với 1 họng 2,5 l/s. Dung tích Wcc bằng bao nhiêu?", "27 m³", "9 m³", "7,5 m³", "450 m³"], ["Trạm khí ép có Wn = 1,2 m³, Pmin = 2,28 at, Pmax = 3,5 at. Dung tích thùng không khí Wkk bằng bao nhiêu?", "3,23 m³", "2,24 m³", "4,43 m³", "0,87 m³"], ["Trạm khí ép có Pmin = 2,28 at, chọn tỷ số Pmin/Pmax = 0,65. Pmax bằng bao nhiêu?", "3,5 at", "1,48 at", "2,93 at", "5,05 at"], ["Nhà 20 tầng, cao tầng 3,3 m, cần htd = 3 m ở vòi tầng 20, cấp một vùng. Áp lực tĩnh gần đúng tại vòi tầng 1 bằng bao nhiêu?", "65,7 m", "69,0 m", "62,7 m", "32,7 m"]];
+const SALT = "epu";
+const NPER = 40;
+const MINUTES = 40;
+const NQ = (NPER>0 && NPER<QS.length) ? NPER : QS.length;
+
+/* SHA-256 thuần JS, chạy được cả khi mở file trực tiếp */
+function sha256(str){
+  const b=new TextEncoder().encode(str);const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const l=b.length,n=((l+9+63)>>6)<<6,m=new Uint8Array(n);m.set(b);m[l]=0x80;const bits=l*8;
+  for(let i=0;i<4;i++)m[n-1-i]=(bits>>>(8*i))&255;m[n-5]=Math.floor(bits/2**32)&255;
+  const W=new Uint32Array(64),r=(x,k)=>(x>>>k)|(x<<(32-k));
+  for(let o=0;o<n;o+=64){
+    for(let i=0;i<16;i++)W[i]=(m[o+4*i]<<24)|(m[o+4*i+1]<<16)|(m[o+4*i+2]<<8)|m[o+4*i+3];
+    for(let i=16;i<64;i++){const s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0;}
+    let[a,bb,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+W[i])|0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    H=[H[0]+a,H[1]+bb,H[2]+c,H[3]+d,H[4]+e,H[5]+f,H[6]+g,H[7]+h].map(x=>x|0);
+  }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+const norm=s=>s.normalize("NFC").replace(/\s+/g," ").trim();
+function maBam(mssv,ten,diem){return sha256(SALT+"|"+norm(mssv).toUpperCase()+"|"+norm(ten).toUpperCase()+"|"+diem).slice(0,6).toUpperCase();}
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let exam=[],ans=[],cur=0,t0=0,tick=null,student={};
+$("nq").textContent=NQ;
+if(MINUTES>0)$("tl").textContent=", thời gian làm bài "+MINUTES+" phút, hết giờ bài được nộp tự động";
+const mmss=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+
+$("start").onclick=()=>{
+  const m=norm($("mssv").value),t=norm($("ten").value);
+  if(!m||!t){$("e1").textContent="Nhập đủ mã số sinh viên và họ tên trước khi bắt đầu.";return;}
+  student={m,t};
+  exam=shuffle(QS.map(q=>({q:q[0],o:shuffle([0,1,2,3].map(i=>({t:q[1+i],ok:i===0})))}))).slice(0,NQ);
+  ans=new Array(exam.length).fill(-1);
+  $("who").textContent=m+" · "+t;$("tot").textContent=exam.length;
+  const g=$("grid");g.innerHTML="";
+  exam.forEach((_,i)=>{const b=document.createElement("button");b.textContent=i+1;b.onclick=()=>go(i);g.appendChild(b);});
+  $("s1").classList.add("hidden");$("s2").classList.remove("hidden");
+  t0=Date.now();if(MINUTES>0){$("clkL").textContent="Còn lại";$("clk").textContent=mmss(MINUTES*60);}
+  tick=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);
+    if(MINUTES>0){const r=MINUTES*60-s;$("clk").textContent=mmss(Math.max(0,r));if(r<=0)nopBai();}
+    else $("clk").textContent=mmss(s);},1000);
+  window.onbeforeunload=()=>"Bài làm chưa nộp";
+  go(0);
+};
+
+function go(i){
+  cur=i;const q=exam[i];
+  $("qn").textContent="CÂU "+(i+1)+" / "+exam.length;$("qt").textContent=q.q;
+  const box=$("opts");box.innerHTML="";
+  q.o.forEach((o,k)=>{const b=document.createElement("button");b.className="opt"+(ans[i]===k?" sel":"");
+    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span><span></span>';b.lastChild.textContent=o.t;
+    b.onclick=()=>{ans[i]=k;refresh();go(i);};box.appendChild(b);});
+  $("prev").disabled=i===0;$("next").disabled=i===exam.length-1;refresh();
+}
+function refresh(){
+  const d=ans.filter(a=>a>=0).length;$("cnt").textContent=d;$("prog").style.width=(100*d/exam.length)+"%";
+  [...$("grid").children].forEach((b,i)=>{b.className=(ans[i]>=0?"done":"")+(i===cur?" cur":"");});
+}
+$("prev").onclick=()=>cur>0&&go(cur-1);
+$("next").onclick=()=>cur<exam.length-1&&go(cur+1);
+document.addEventListener("keydown",e=>{
+  if($("s2").classList.contains("hidden")||!$("mdl").classList.contains("hidden"))return;
+  const k=e.key.toUpperCase();
+  if("ABCD".includes(k)&&k.length===1){ans[cur]="ABCD".indexOf(k);go(cur);}
+  else if(e.key==="ArrowRight")$("next").click();else if(e.key==="ArrowLeft")$("prev").click();
+});
+
+$("submit").onclick=()=>{
+  const left=ans.filter(a=>a<0).length;
+  $("mTxt").textContent=left?("Còn "+left+" câu chưa trả lời, các câu này sẽ tính là sai. Nộp bài ngay?"):"Nộp bài và xem kết quả?";
+  $("mdl").classList.remove("hidden");
+};
+$("mNo").onclick=()=>$("mdl").classList.add("hidden");
+$("mYes").onclick=()=>nopBai();
+function nopBai(){
+  if(!exam.length)return;
+  $("mdl").classList.add("hidden");clearInterval(tick);window.onbeforeunload=null;
+  const c=exam.reduce((s,q,i)=>s+(ans[i]>=0&&q.o[ans[i]].ok?1:0),0);
+  const diem=(Math.round(c/exam.length*1000)/100).toFixed(2);
+  $("rM").textContent=student.m;$("rT").textContent=student.t;$("rD").textContent=diem+" / 10";
+  $("rC").textContent=c+" / "+exam.length;$("rH").textContent=maBam(student.m,student.t,diem);
+  $("rTime").textContent=new Date().toLocaleString("vi-VN");
+  $("s2").classList.add("hidden");$("s3").classList.remove("hidden");
+  exam=[];ans=[];
+}
+$("print").onclick=()=>window.print();
+</script>
+</body>
+</html>

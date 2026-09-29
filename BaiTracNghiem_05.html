@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Cấp nước</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2430;--mute:#667085;--line:#dde2ea;--pri:#0b4f9c;--pri2:#e8f0fb;--ok:#1b7f4b;--warn:#b54708}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+header h1{font-size:20px;margin:0 0 2px}
+header p{margin:0;color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:16px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text]{width:100%;padding:10px 12px;font-size:16px;border:1px solid var(--line);border-radius:8px}
+input[type=text]:focus{outline:2px solid var(--pri);border-color:var(--pri)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:9px 16px}
+button.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+.err{color:#b42318;font-size:14px;min-height:20px;margin-top:6px}
+.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mute)}
+.top b{color:var(--ink)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pri);width:0}
+.qn{font-size:13px;color:var(--pri);font-weight:700;letter-spacing:.3px}
+.qt{font-size:18px;font-weight:600;margin:4px 0 14px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.opt:hover{border-color:var(--pri)}
+.opt.sel{border-color:var(--pri);background:var(--pri2)}
+.opt .k{flex:0 0 26px;height:26px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:#fff}
+.opt.sel .k{background:var(--pri);border-color:var(--pri);color:#fff}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.grid button{padding:6px 0;font-size:13px}
+.grid button.done{background:var(--pri2);border-color:#9dbbe6}
+.grid button.cur{outline:2px solid var(--pri)}
+.sub{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.res table{width:100%;border-collapse:collapse;font-size:17px}
+.res td{padding:12px 6px;border-bottom:1px solid var(--line)}
+.res td:first-child{color:var(--mute);width:40%}
+.res td:last-child{font-weight:700}
+.hash{font-family:Consolas,"Courier New",monospace;font-size:24px;letter-spacing:3px;color:var(--pri)}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(15,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-width:420px;width:100%}
+@media print{body{background:#fff}.noprint{display:none!important}.card{border:1px solid #999}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Trắc nghiệm Cấp thoát nước trong công trình</h1>
+  <p>Chương 04 Bài 5 · Khoa Cơ khí, Ô tô và Xây dựng · Trường Đại học Điện lực</p>
+</header>
+
+<section id="s1" class="card">
+  <p style="margin-top:0">Bài gồm <b id="nq"></b> câu, mỗi câu có một đáp án đúng<span id="tl"></span>. Câu hỏi và phương án được xáo trộn riêng cho từng lượt làm. Điểm tính theo thang 10.</p>
+  <label for="mssv">Mã số sinh viên</label>
+  <input id="mssv" type="text" autocomplete="off" placeholder="Ví dụ 2081110123">
+  <label for="ten">Họ và tên</label>
+  <input id="ten" type="text" autocomplete="off" placeholder="Ví dụ Nguyễn Văn An">
+  <div class="err" id="e1"></div>
+  <button class="pri" id="start">Bắt đầu làm bài</button>
+</section>
+
+<section id="s2" class="hidden">
+  <div class="card">
+    <div class="top"><span><b id="who"></b></span><span>Đã trả lời <b id="cnt">0</b>/<b id="tot"></b> · <span id="clkL">Thời gian</span> <b id="clk">00:00</b></span></div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+  <div class="card">
+    <div class="qn" id="qn"></div>
+    <div class="qt" id="qt"></div>
+    <div id="opts"></div>
+    <div class="nav"><button id="prev">← Câu trước</button><button id="next">Câu sau →</button></div>
+  </div>
+  <div class="card">
+    <div class="grid" id="grid"></div>
+    <div class="sub"><span class="note" style="margin:0">Bấm số để chuyển nhanh đến câu tương ứng. Ô tô xanh là câu đã trả lời.</span><button class="pri" id="submit">Nộp bài</button></div>
+  </div>
+</section>
+
+<section id="s3" class="card res hidden">
+  <h2 style="margin-top:0;font-size:20px">Kết quả trắc nghiệm</h2>
+  <table>
+    <tr><td>MSSV</td><td id="rM"></td></tr>
+    <tr><td>Họ và tên</td><td id="rT"></td></tr>
+    <tr><td>Điểm</td><td id="rD"></td></tr>
+    <tr><td>Số câu đúng</td><td id="rC"></td></tr>
+    <tr><td>Mã băm</td><td class="hash" id="rH"></td></tr>
+  </table>
+  <p class="note">Nộp thời điểm <span id="rTime"></span>. Chụp màn hình hoặc in trang này để nộp cho giảng viên. Mã băm gắn với MSSV, họ tên và điểm, sửa bất kỳ thông tin nào thì mã sẽ không còn khớp.</p>
+  <div class="noprint"><button id="print">In kết quả</button></div>
+</section>
+</div>
+
+<div class="modal hidden" id="mdl"><div class="card">
+  <p id="mTxt" style="margin-top:0"></p>
+  <div class="nav"><button id="mNo">Làm tiếp</button><button class="pri" id="mYes">Nộp bài</button></div>
+</div></div>
+
+<script>
+const QS = [["Ống thoát nước PVC trong nhà thường được nối với nhau bằng cách nào?", "Dán keo đầu trơn vào đầu loe", "Hàn điện hai đầu ống với nhau", "Tiện ren và vặn măng sông thép", "Bắt bu lông qua mặt bích"], ["Ống đứng thoát nước trong nhà có đường kính tối thiểu bao nhiêu?", "50 mm", "34 mm", "42 mm", "75 mm"], ["Ống đứng thu nước phân, dù chỉ có một hố xí, có đường kính tối thiểu bao nhiêu?", "100 mm", "50 mm", "75 mm", "150 mm"], ["Chiều dài một ống nhánh thoát nước đặt trong sàn không nên vượt quá bao nhiêu?", "10 m", "5 m", "15 m", "20 m"], ["Khoảng cách từ mặt sàn đến đỉnh ống nhánh đặt trong sàn phải lớn hơn bao nhiêu?", "10 cm", "3 cm", "5 cm", "30 cm"], ["Máng hở dẫn nước tắm rửa đến ống đứng có độ dốc tối thiểu bao nhiêu?", "0,01", "0,001", "0,005", "0,05"], ["Ống tháo đường kính 100 mm có chiều dài lớn nhất cho phép bao nhiêu?", "15 m", "10 m", "20 m", "30 m"], ["Ống tháo đường kính 50 mm có chiều dài lớn nhất cho phép bao nhiêu?", "10 m", "5 m", "15 m", "20 m"], ["Ống tháo đường kính 150 mm có chiều dài lớn nhất cho phép bao nhiêu?", "20 m", "15 m", "25 m", "30 m"], ["Giếng thăm trên đường ống tháo ra khỏi nhà được đặt cách móng nhà bao nhiêu?", "3 đến 5 m", "0,5 đến 1 m", "1 đến 2 m", "8 đến 10 m"], ["Lỗ chừa cho ống tháo xuyên qua tường móng lớn hơn đường kính ống tối thiểu bao nhiêu?", "30 cm", "3 cm", "10 cm", "50 cm"], ["Ống thông hơi phải cao hơn mái nhà tối thiểu bao nhiêu?", "0,7 m", "0,3 m", "1,5 m", "3,0 m"], ["Mái bằng dùng để đi lại, phơi đồ thì ống thông hơi phải cao hơn mái bao nhiêu?", "Trên 3 m", "Trên 0,7 m", "Trên 1,5 m", "Trên 5 m"], ["Ống thông hơi phải cách cửa sổ, ban công nhà láng giềng tối thiểu bao nhiêu?", "4 m", "1 m", "2 m", "10 m"], ["Ống đứng thoát nước d = 100 mm phải đặt ống thông hơi phụ khi lưu lượng lớn hơn bao nhiêu?", "9 l/s", "2 l/s", "4 l/s", "20 l/s"], ["Ống đứng thoát nước d = 50 mm phải đặt ống thông hơi phụ khi lưu lượng lớn hơn bao nhiêu?", "2 l/s", "0,5 l/s", "4 l/s", "9 l/s"], ["Ống đứng thoát nước d = 150 mm phải đặt ống thông hơi phụ khi lưu lượng lớn hơn bao nhiêu?", "20 l/s", "9 l/s", "12 l/s", "30 l/s"], ["Theo bài giảng, chiều sâu lớp nước bịt kín trong xi phông cần đảm bảo bao nhiêu?", "4 đến 5 cm", "1 đến 2 cm", "10 đến 15 cm", "20 đến 25 cm"], ["Ống kiểm tra trên ống đứng được đặt cách mặt sàn khoảng bao nhiêu?", "1 m", "0,3 m", "0,5 m", "1,8 m"], ["Ống kiểm tra phải cao hơn mép thiết bị vệ sinh bao nhiêu?", "15 cm", "5 cm", "30 cm", "50 cm"], ["Giếng kiểm tra trong tầng hầm có kích thước tối thiểu bao nhiêu?", "700 × 700 mm", "300 × 300 mm", "500 × 500 mm", "1000 × 1500 mm"], ["Mạng lưới thoát nước sân nhà phải cách tường nhà tối thiểu bao nhiêu?", "3 m", "1 m", "1,5 m", "5 m"], ["Đường kính tối thiểu của mạng lưới thoát nước sân nhà là bao nhiêu?", "125 mm", "75 mm", "100 mm", "200 mm"], ["Đường kính tối thiểu của mạng lưới thoát nước tiểu khu là bao nhiêu?", "150 mm", "100 mm", "125 mm", "300 mm"], ["Khoảng cách lớn nhất giữa hai giếng thăm trên ống d từ 150 đến 600 mm là bao nhiêu?", "50 m", "20 m", "30 m", "100 m"], ["Chênh lệch cốt đáy ống từ bao nhiêu thì phải xây giếng chuyển bậc?", "Từ 0,5 m trở lên", "Từ 0,1 m trở lên", "Từ 0,2 m trở lên", "Từ 2,0 m trở lên"], ["Vận tốc tối thiểu để ống thoát nước trong nhà tự làm sạch là bao nhiêu?", "0,7 m/s", "0,2 m/s", "0,4 m/s", "1,5 m/s"], ["Vận tốc tối thiểu cho phép trong máng hở thoát nước là bao nhiêu?", "0,4 m/s", "0,1 m/s", "0,7 m/s", "1,0 m/s"], ["Vận tốc lớn nhất cho phép trong ống thoát nước không kim loại là bao nhiêu?", "4 m/s", "1 m/s", "2 m/s", "8 m/s"], ["Theo Bảng 6.4, độ đầy cho phép tối đa của ống thoát nước d = 100 mm là bao nhiêu?", "0,5d", "0,3d", "0,8d", "1,0d"], ["Bể tự hoại có dung tích lớn hơn 10 m³ được chia thành mấy ngăn?", "Ba ngăn", "Một ngăn", "Hai ngăn", "Năm ngăn"], ["Với bể tự hoại hai ngăn, ngăn đầu tiên chiếm bao nhiêu phần trăm dung tích?", "75%", "25%", "50%", "90%"], ["Thời gian lưu nước tối thiểu trong bể tự hoại thường lấy bằng bao nhiêu?", "1 đến 2 ngày", "2 đến 4 giờ", "5 đến 7 ngày", "15 đến 30 ngày"], ["Lượng bùn tích lũy hằng năm r của bể xử lý cả nước đen và nước xám là bao nhiêu?", "40 l/(người.năm)", "30 l/(người.năm)", "60 l/(người.năm)", "150 l/(người.năm)"], ["Chu kỳ hút bùn thích hợp cho bể tự hoại hộ gia đình là bao lâu?", "3 năm một lần", "3 tháng một lần", "1 năm một lần", "10 năm một lần"], ["Khi hút bùn bể tự hoại cần để lại bao nhiêu phần bùn cũ?", "10 đến 20%", "Không để lại", "40 đến 50%", "70 đến 80%"], ["Ống thông hơi của bể tự hoại có đường kính không nhỏ hơn bao nhiêu?", "60 mm", "21 mm", "34 mm", "150 mm"], ["Dung tích phần lưu không trên mặt nước bể tự hoại lấy bằng bao nhiêu dung tích ướt?", "20%", "5%", "50%", "100%"], ["Hiệu suất xử lý trung bình của bể BASTAF theo COD, BOD5 và TSS khoảng bao nhiêu?", "70 đến 90%", "10 đến 20%", "30 đến 40%", "98 đến 100%"], ["QCVN 14:2025/BTNMT về nước thải sinh hoạt có hiệu lực từ ngày nào?", "01/9/2025", "01/01/2025", "01/7/2024", "01/01/2032"], ["Vì sao miệng loe ống gang luôn đặt ngược chiều nước chảy?", "Để mép ống không cản dòng, không giữ cặn", "Để dễ nhét vữa xi măng vào mối nối", "Để ống chịu được áp lực nước cao hơn", "Để tiết kiệm chiều dài của ống nối"], ["Vì sao không đặt ống nhánh treo đi qua phòng ở và bếp?", "Rò rỉ sẽ gây mất vệ sinh cho không gian dưới", "Nhiệt từ bếp làm ống bị mềm và biến dạng", "Ống treo làm giảm vận tốc dòng chảy", "Ống treo làm tăng áp suất trong ống đứng"], ["Vì sao ống đứng thoát nước nên bố trí gần hố xí?", "Dẫn phân đi xa trên ống ngang dễ gây tắc", "Để giảm lượng nước xả của hố xí", "Để rút ngắn chiều dài ống thông hơi", "Để tăng chiều sâu lớp nước xi phông"], ["Vì sao không được nối ống nhánh vào đoạn ngang của ống đứng?", "Cản trở dòng chảy và dễ gây tắc ống", "Làm ống đứng bị nứt vỡ do va đập", "Làm tăng chiều cao ống thông hơi", "Làm mối nối keo bị bong ra nhanh"], ["Ưu điểm chính của mạng thoát nước riêng nước đen và nước xám là gì?", "Giảm dung tích cần thiết của bể tự hoại", "Giảm số lượng ống đứng trong nhà", "Không cần bố trí ống thông hơi", "Không cần bố trí giếng thăm ngoài sân"], ["Vì sao nên tránh đưa nước xám vào bể tự hoại?", "Xà phòng, chất tẩy ảnh hưởng vi sinh vật", "Nước xám làm cặn lắng xuống quá nhanh", "Nước xám làm nhiệt độ trong bể quá cao", "Nước xám làm lớp váng nổi dày lên nhiều"], ["Nhiệm vụ chính của hệ thống thông hơi thoát nước là gì?", "Cân bằng áp suất và dẫn khí độc ra ngoài", "Tăng lưu lượng nước thải trong ống", "Giảm độ dốc cần thiết của ống ngang", "Thu nước mưa trên mái vào ống đứng"], ["Vì sao cấm nối ống đứng thoát nước với ống thông khói của nhà?", "Khí độc, khí dễ nổ lẫn vào đường khói", "Ống thông khói có đường kính quá nhỏ", "Khói làm nguội nước thải trong ống", "Ống thông khói không chịu được nước"], ["Hiệu ứng piston trong ống đứng nhà cao tầng gây ra hậu quả gì?", "Áp âm hút cạn nước trong xi phông", "Áp dương làm nứt vỡ ống đứng", "Nhiệt độ trong ống tăng rất cao", "Cặn lắng dồn ngược lên tầng trên"], ["Khi xi phông bị hút cạn nước thì hậu quả là gì?", "Mùi hôi, khí độc lọt vào trong phòng", "Nước thải chảy nhanh hơn bình thường", "Ống nhánh bị giãn nở theo nhiệt", "Thiết bị vệ sinh xả nước mạnh hơn"], ["Phòng tắm ít dùng bốc mùi hôi, nguyên nhân mất nước xi phông thường là gì?", "Bốc hơi", "Tự hút", "Hút cảm ứng", "Đẩy ngược"], ["Hiện tượng hút cảm ứng làm mất nước xi phông xảy ra khi nào?", "Dòng nước trong ống đứng gây áp âm ở nhánh", "Chính thiết bị đó xả một lượng nước lớn", "Thiết bị lâu ngày không được sử dụng", "Sợi tóc, sợi vải vắt qua xi phông"], ["Nhận định nào đúng về van thông khí một chiều?", "Chỉ bổ trợ, không thay thông hơi chính", "Thay hoàn toàn ống thông hơi vượt mái", "Dùng để xả khí độc ra ngoài nhà", "Dùng để chặn nước thải chảy ngược"], ["Vì sao ống ngang thoát nước dốc quá 4% cũng dễ bị tắc?", "Nước chạy nhanh, bỏ lại chất rắn phía sau", "Nước chảy quá chậm nên cặn lắng lại", "Ống bị giãn nở nhiệt khi dốc lớn", "Khí trong ống không thoát được lên mái"], ["Độ dốc 6,5 mm trên 300 mm chiều dài ống tương ứng khoảng bao nhiêu?", "Khoảng 2%", "Khoảng 0,2%", "Khoảng 6,5%", "Khoảng 20%"], ["Vì sao cửa thăm cần khoảng trống xung quanh ít nhất 30 đến 45 cm?", "Để thợ có chỗ thao tác thông tắc", "Để thông gió tự nhiên cho ống", "Để giảm tiếng ồn dòng chảy", "Để thoát nước khi ống bị tràn"], ["Vì sao trên ống ngang dài phải có ống kiểm tra hoặc ống súc rửa?", "Để thông tắc khi xảy ra sự cố", "Để giảm độ dốc cần thiết của ống", "Để tăng vận tốc dòng chảy trong ống", "Để thay thế cho ống thông hơi"], ["Góc ngoặt giữa ống tháo và ống sân nhà không nhỏ hơn 90° theo chiều nước chảy nhằm mục đích gì?", "Tránh lắng cặn và tắc đường ống", "Giảm chiều dài của ống tháo", "Tăng áp lực nước tại giếng thăm", "Giảm độ sâu chôn ống ngoài sân"], ["Vì sao lỗ chừa khi ống tháo xuyên qua móng phải lớn hơn đường kính ống?", "Tránh ống bị đè vỡ khi nhà lún", "Để dễ đổ bê tông móng xung quanh", "Để thông hơi cho đoạn ống tháo", "Để giảm chiều dài đoạn ống tháo"], ["Nối ống theo kiểu ngang mực nước trong giếng thăm nhằm mục đích gì?", "Tránh nước dềnh ngược về ống phía trên", "Giảm chiều sâu xây dựng giếng thăm", "Tăng lưu lượng của ống ra khỏi giếng", "Giảm số lượng giếng thăm cần xây"], ["Vì sao hạn chế dùng nối chữ T vuông góc trong hệ thống nước thải?", "Dòng chảy va đập, dễ gây tắc ống", "Phụ tùng chữ T khó mua trên thị trường", "Nối chữ T làm tăng độ dốc của ống", "Phụ tùng chữ T không dán keo được"], ["Công thức Qth = qc + qdc max dùng để tính lưu lượng nước thải cho loại công trình nào?", "Nhà ở gia đình và nhà công cộng", "Phân xưởng và nhà tắm công cộng", "Mạng thoát nước mưa trên mái", "Mạng thoát nước đường phố"], ["Công thức Qth = Σ(qo.n.β)/100 dùng cho loại công trình nào?", "Phân xưởng, nhà tắm công cộng", "Nhà ở gia đình nhiều tầng", "Biệt thự ít người sử dụng", "Mạng thoát nước mưa sân nhà"], ["Đại lượng β trong công thức (6.2) thể hiện điều gì?", "Phần trăm thiết bị làm việc đồng thời", "Hệ số nhám của thành ống thoát nước", "Độ đầy cho phép của ống thoát nước", "Hệ số giảm thể tích cặn khi lên men"], ["Vì sao trị số β của hố xí giảm khi số lượng hố xí tăng?", "Nhiều hố xí thì ít khi xả cùng một lúc", "Nhiều hố xí thì lưu lượng mỗi cái giảm", "Ống lớn hơn nên nước thoát nhanh hơn", "Áp lực nước cấp bị giới hạn"], ["Vì sao chậu rửa mặt trong phòng sinh hoạt phân xưởng có β = 100%?", "Công nhân rửa tay cùng lúc khi hết ca", "Chậu rửa có lưu lượng thải rất nhỏ", "Chậu rửa không lắp xi phông", "Chậu rửa nối thẳng vào ống đứng"], ["Khi ống tròn chảy nửa ống (H/d = 0,5), bán kính thủy lực R bằng bao nhiêu?", "d/4", "d/2", "d/8", "πd/2"], ["Ống thoát nước không đạt vận tốc tự làm sạch thì cách xử lý hợp lý là gì?", "Tăng độ dốc ống", "Giảm độ dốc ống", "Tăng đường kính ống", "Bỏ bớt ống thông hơi"], ["Ống không đủ khả năng thoát lưu lượng tính toán thì cách xử lý là gì?", "Tăng độ dốc hoặc tăng đường kính", "Giảm độ dốc để nước chảy êm hơn", "Giảm đường kính để tăng vận tốc", "Lắp thêm xi phông trên đường ống"], ["Nước thải được làm sạch trong bể tự hoại nhờ hai quá trình nào?", "Lắng cặn và lên men cặn lắng", "Lọc cát và khử trùng bằng clo", "Keo tụ và tuyển nổi bằng khí", "Sục khí và oxy hóa hiếu khí"], ["Vì sao tê dẫn nước vào và ra bể tự hoại phải ngập dưới lớp váng?", "Tránh váng cặn trôi ra khỏi bể", "Tăng tốc độ lên men của cặn", "Giảm chiều sâu xây dựng bể", "Giữ nhiệt độ ổn định cho bể"], ["Vì sao ống vào, ống ra và cửa giữa các ngăn bể tự hoại đặt so le?", "Tránh chảy tắt, kéo dài đường nước đi", "Giảm chi phí xây dựng các vách ngăn", "Giúp hút bùn ở đáy bể dễ dàng hơn", "Giảm chiều dày lớp váng nổi trên mặt"], ["Vì sao không dẫn nước thải vào bể tự hoại trực tiếp qua ống đứng?", "Tránh xáo trộn, sục bùn cặn trong bể", "Tránh làm nguội nước thải trong bể", "Tránh gây tắc ống thông hơi của bể", "Tránh làm tăng dung tích cần của bể"], ["Vì sao khi hút bùn cần để lại 10 đến 20% bùn cũ trong bể?", "Giữ lại vi sinh vật kỵ khí trong bể", "Giữ nắp bể không bị đẩy nổi", "Giảm chi phí mỗi lần hút bùn", "Giảm mùi hôi trong khi hút bùn"], ["Vì sao tránh hút cạn bể tự hoại khi mực nước ngầm cao hơn đáy bể?", "Áp lực đẩy nổi có thể làm nứt vỡ bể", "Bùn trong bể bị đông cứng lại", "Nước ngầm tràn vào ống đứng", "Vi sinh vật phát triển quá mạnh"], ["Vì sao ngăn lọc của bể tự hoại có ngăn lọc cần thông hơi tốt?", "Vi khuẩn hiếu khí cần nhiều ôxy", "Vi khuẩn kỵ khí cần khí metan", "Để hạ nhiệt độ nước thải", "Để thoát nước mưa vào bể"], ["Các vách ngăn hướng dòng lên trong bể BAST có tác dụng gì?", "Cho nước tiếp xúc lớp bùn chứa vi sinh vật", "Cho nước chảy nhanh hơn để ra khỏi bể", "Làm giảm lượng vi sinh vật trong bể", "Tách dầu mỡ ra khỏi dòng nước thải vào"], ["Bể tự hoại tiếp nhận nước thải nhà bếp, nhà ăn cần điều chỉnh dung tích thế nào?", "Tăng vùng bùn cặn và váng thêm 50%", "Giảm dung tích vùng lắng đi 50%", "Bỏ ngăn lắng, chỉ giữ ngăn chứa", "Cộng thêm 70 lít cho mỗi người"], ["Số 200 trong công thức Vu = N.(tn.qo + 200)/1000 có nguồn gốc từ đâu?", "Dung tích cặn tươi, bùn và váng cho 3 năm", "Lượng nước thải mỗi người mỗi ngày", "Thời gian lưu nước trong hai ngày", "Dung tích lưu không phía trên mặt nước"], ["Vì sao ống đứng uPVC dài cần bố trí khớp nối giãn nở?", "Hệ số giãn nở nhiệt của uPVC lớn", "Ống uPVC chịu va đập kém", "Ống uPVC nặng hơn ống gang", "Ống uPVC không dán keo được"], ["Ống đứng thu hố xí có thùng rửa (qdc max = 1,6 l/s), lưu lượng nước cấp tính toán qc = 1,10 l/s. Lưu lượng nước thải tính toán Qth bằng bao nhiêu?", "2,70 l/s", "1,10 l/s", "1,60 l/s", "0,50 l/s"], ["Ống nhánh thu 1 chậu rửa mặt (0,10 l/s) và 1 vòi sen (0,20 l/s), qc = 0,25 l/s. Qth theo công thức (6.1) bằng bao nhiêu?", "0,45 l/s", "0,35 l/s", "0,55 l/s", "0,25 l/s"], ["Khu vệ sinh phân xưởng có 10 hố xí thùng rửa, qo = 1,5 l/s, β = 20%. Qth theo công thức (6.2) bằng bao nhiêu?", "3,00 l/s", "300 l/s", "15,0 l/s", "0,30 l/s"], ["Phòng sinh hoạt có 10 chậu rửa mặt (qo = 0,10 l/s, β = 100%) và 6 âu tiểu treo (qo = 0,10 l/s, β = 50%). Qth bằng bao nhiêu?", "1,30 l/s", "1,60 l/s", "0,80 l/s", "130 l/s"], ["Ống d = 125 mm cần thoát Qth = 4,30 l/s. Theo Bảng 6.5, độ dốc nhỏ nhất đạt cả khả năng thoát và v ≥ 0,7 m/s là bao nhiêu?", "i = 0,009", "i = 0,005", "i = 0,007", "i = 0,008"], ["Ống d = 100 mm cần thoát Qth = 4,30 l/s. Theo Bảng 6.5, độ dốc nhỏ nhất đạt yêu cầu là bao nhiêu?", "i = 0,03", "i = 0,01", "i = 0,02", "i = 0,005"], ["Ống d = 100 mm chảy nửa ống, i = 0,02, n = 0,013. Vận tốc theo công thức Manning bằng bao nhiêu?", "0,93 m/s", "0,59 m/s", "0,66 m/s", "1,48 m/s"], ["Ống d = 100 mm chảy nửa ống với vận tốc 0,93 m/s. Lưu lượng Q bằng bao nhiêu?", "3,65 l/s", "7,30 l/s", "36,5 l/s", "1,83 l/s"], ["Ống d = 50 mm chảy nửa ống, i = 0,03, n = 0,013. Vận tốc theo công thức Manning bằng bao nhiêu?", "0,72 m/s", "0,59 m/s", "1,14 m/s", "0,45 m/s"], ["Ống nhánh d = 50 mm, Qth = 0,45 l/s, chọn i = 0,02 thì Bảng 6.5 cho q = 0,58 l/s, v = 0,59 m/s. Kết luận nào đúng?", "Không đạt vì v nhỏ hơn 0,7 m/s", "Đạt vì q lớn hơn Qth", "Không đạt vì q nhỏ hơn Qth", "Đạt vì v lớn hơn 0,4 m/s"], ["Ống uPVC dài 10 m, chênh nhiệt 25 K, hệ số giãn nở α = 0,07 mm/(m.K). Độ giãn dài ΔL bằng bao nhiêu?", "17,5 mm", "1,75 mm", "175 mm", "250 mm"], ["Ống uPVC dài 6 m, chênh nhiệt 30 K, α = 0,07 mm/(m.K). Độ giãn dài ΔL bằng bao nhiêu?", "12,6 mm", "1,26 mm", "126 mm", "21,0 mm"], ["Hộ 5 người, bể chỉ xử lý nước đen, qo = 60 l/(người.ngày), tn = 2 ngày. Dung tích ướt tính theo (6.15) bằng bao nhiêu?", "1,35 m³", "1,75 m³", "0,60 m³", "1350 m³"], ["Tiếp câu trước, sau khi so với dung tích tối thiểu 1,5 m³ và cộng phần lưu không 20%, tổng dung tích bể bằng bao nhiêu?", "1,80 m³", "1,50 m³", "1,62 m³", "3,60 m³"], ["Nhà 40 người, bể xử lý cả nước đen và xám, qo = 150 l/(người.ngày), tn = 1 ngày. Dung tích ướt theo (6.14) bằng bao nhiêu?", "14,0 m³", "12,0 m³", "6,0 m³", "20,0 m³"], ["Lưu lượng nước thải Q = 6,0 m³/ngày đêm. Dung tích bể tự hoại theo công thức W = 0,75.Q + 4,25 bằng bao nhiêu?", "8,75 m³", "4,50 m³", "10,25 m³", "26,25 m³"], ["Tính Wc theo (6.4) với N = 40, a = 0,6, T = 180 ngày, W1 = 95%, W2 = 90%, b = 0,7, c = 1,2. Kết quả bằng bao nhiêu?", "1,81 m³", "7,26 m³", "2,59 m³", "1,51 m³"], ["Bể tự hoại hai ngăn có tổng dung tích 8 m³. Dung tích ngăn đầu bằng bao nhiêu?", "6,0 m³", "4,0 m³", "2,0 m³", "5,3 m³"], ["Bể tự hoại ba ngăn có tổng dung tích 16 m³. Dung tích ngăn đầu bằng bao nhiêu?", "8,0 m³", "12,0 m³", "4,0 m³", "5,3 m³"], ["Bể tự hoại có H = 1,2 m, B = 0,7 m, L1 = 1,2 m, L2 = 0,6 m. Dung tích ướt của bể bằng bao nhiêu?", "1,51 m³", "1,01 m³", "0,50 m³", "1,26 m³"]];
+const SALT = "epu";
+const NPER = 40;
+const MINUTES = 40;
+const NQ = (NPER>0 && NPER<QS.length) ? NPER : QS.length;
+
+/* SHA-256 thuần JS, chạy được cả khi mở file trực tiếp */
+function sha256(str){
+  const b=new TextEncoder().encode(str);const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const l=b.length,n=((l+9+63)>>6)<<6,m=new Uint8Array(n);m.set(b);m[l]=0x80;const bits=l*8;
+  for(let i=0;i<4;i++)m[n-1-i]=(bits>>>(8*i))&255;m[n-5]=Math.floor(bits/2**32)&255;
+  const W=new Uint32Array(64),r=(x,k)=>(x>>>k)|(x<<(32-k));
+  for(let o=0;o<n;o+=64){
+    for(let i=0;i<16;i++)W[i]=(m[o+4*i]<<24)|(m[o+4*i+1]<<16)|(m[o+4*i+2]<<8)|m[o+4*i+3];
+    for(let i=16;i<64;i++){const s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0;}
+    let[a,bb,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+W[i])|0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    H=[H[0]+a,H[1]+bb,H[2]+c,H[3]+d,H[4]+e,H[5]+f,H[6]+g,H[7]+h].map(x=>x|0);
+  }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+const norm=s=>s.normalize("NFC").replace(/\s+/g," ").trim();
+function maBam(mssv,ten,diem){return sha256(SALT+"|"+norm(mssv).toUpperCase()+"|"+norm(ten).toUpperCase()+"|"+diem).slice(0,6).toUpperCase();}
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let exam=[],ans=[],cur=0,t0=0,tick=null,student={};
+$("nq").textContent=NQ;
+if(MINUTES>0)$("tl").textContent=", thời gian làm bài "+MINUTES+" phút, hết giờ bài được nộp tự động";
+const mmss=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+
+$("start").onclick=()=>{
+  const m=norm($("mssv").value),t=norm($("ten").value);
+  if(!m||!t){$("e1").textContent="Nhập đủ mã số sinh viên và họ tên trước khi bắt đầu.";return;}
+  student={m,t};
+  exam=shuffle(QS.map(q=>({q:q[0],o:shuffle([0,1,2,3].map(i=>({t:q[1+i],ok:i===0})))}))).slice(0,NQ);
+  ans=new Array(exam.length).fill(-1);
+  $("who").textContent=m+" · "+t;$("tot").textContent=exam.length;
+  const g=$("grid");g.innerHTML="";
+  exam.forEach((_,i)=>{const b=document.createElement("button");b.textContent=i+1;b.onclick=()=>go(i);g.appendChild(b);});
+  $("s1").classList.add("hidden");$("s2").classList.remove("hidden");
+  t0=Date.now();if(MINUTES>0){$("clkL").textContent="Còn lại";$("clk").textContent=mmss(MINUTES*60);}
+  tick=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);
+    if(MINUTES>0){const r=MINUTES*60-s;$("clk").textContent=mmss(Math.max(0,r));if(r<=0)nopBai();}
+    else $("clk").textContent=mmss(s);},1000);
+  window.onbeforeunload=()=>"Bài làm chưa nộp";
+  go(0);
+};
+
+function go(i){
+  cur=i;const q=exam[i];
+  $("qn").textContent="CÂU "+(i+1)+" / "+exam.length;$("qt").textContent=q.q;
+  const box=$("opts");box.innerHTML="";
+  q.o.forEach((o,k)=>{const b=document.createElement("button");b.className="opt"+(ans[i]===k?" sel":"");
+    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span><span></span>';b.lastChild.textContent=o.t;
+    b.onclick=()=>{ans[i]=k;refresh();go(i);};box.appendChild(b);});
+  $("prev").disabled=i===0;$("next").disabled=i===exam.length-1;refresh();
+}
+function refresh(){
+  const d=ans.filter(a=>a>=0).length;$("cnt").textContent=d;$("prog").style.width=(100*d/exam.length)+"%";
+  [...$("grid").children].forEach((b,i)=>{b.className=(ans[i]>=0?"done":"")+(i===cur?" cur":"");});
+}
+$("prev").onclick=()=>cur>0&&go(cur-1);
+$("next").onclick=()=>cur<exam.length-1&&go(cur+1);
+document.addEventListener("keydown",e=>{
+  if($("s2").classList.contains("hidden")||!$("mdl").classList.contains("hidden"))return;
+  const k=e.key.toUpperCase();
+  if("ABCD".includes(k)&&k.length===1){ans[cur]="ABCD".indexOf(k);go(cur);}
+  else if(e.key==="ArrowRight")$("next").click();else if(e.key==="ArrowLeft")$("prev").click();
+});
+
+$("submit").onclick=()=>{
+  const left=ans.filter(a=>a<0).length;
+  $("mTxt").textContent=left?("Còn "+left+" câu chưa trả lời, các câu này sẽ tính là sai. Nộp bài ngay?"):"Nộp bài và xem kết quả?";
+  $("mdl").classList.remove("hidden");
+};
+$("mNo").onclick=()=>$("mdl").classList.add("hidden");
+$("mYes").onclick=()=>nopBai();
+function nopBai(){
+  if(!exam.length)return;
+  $("mdl").classList.add("hidden");clearInterval(tick);window.onbeforeunload=null;
+  const c=exam.reduce((s,q,i)=>s+(ans[i]>=0&&q.o[ans[i]].ok?1:0),0);
+  const diem=(Math.round(c/exam.length*1000)/100).toFixed(2);
+  $("rM").textContent=student.m;$("rT").textContent=student.t;$("rD").textContent=diem+" / 10";
+  $("rC").textContent=c+" / "+exam.length;$("rH").textContent=maBam(student.m,student.t,diem);
+  $("rTime").textContent=new Date().toLocaleString("vi-VN");
+  $("s2").classList.add("hidden");$("s3").classList.remove("hidden");
+  exam=[];ans=[];
+}
+$("print").onclick=()=>window.print();
+</script>
+</body>
+</html>
